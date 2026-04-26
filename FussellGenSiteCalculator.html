@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Generator Set Space Calculator — Lyoid Fussell</title>
+  <style>
+    :root {
+      --navy: #0c2340;
+      --navy-mid: #163356;
+      --blue: #3b82f6;
+      --blue-light: rgba(29,78,216,0.18);
+      --blue-bright: #60a5fa;
+      --orange: #d97706;
+      --orange-light: rgba(217,119,6,0.12);
+      --green: #059669;
+      --green-light: rgba(5,150,105,0.12);
+      --bg: #0c2340;
+      --card: rgba(255,255,255,0.05);
+      --border: rgba(255,255,255,0.10);
+      --text: #f0f4ff;
+      --muted: #94a3b8;
+      --mono: 'Courier New', 'Consolas', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ──────────────────────────────────── */
+    header {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+      color: #fff;
+      padding: 2.2rem 2rem 1.4rem;
+      text-align: center;
+    }
+    .brand-badge {
+      display: inline-block;
+      background: var(--orange);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 0.2rem 0.7rem;
+      border-radius: 4px;
+      margin-bottom: 0.6rem;
+    }
+    header h1 {
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    header p {
+      margin-top: 0.4rem;
+      opacity: 0.8;
+      font-size: 0.95rem;
+    }
+
+    /* ── NAV ─────────────────────────────────────── */
+    nav {
+      background: #0a1e38;
+      display: flex;
+      justify-content: center;
+      gap: 0.25rem;
+      padding: 0 1rem;
+      flex-wrap: wrap;
+    }
+    nav a {
+      color: rgba(255,255,255,0.65);
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      padding: 0.7rem 1.2rem;
+      border-bottom: 3px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    nav a:hover { color: #fff; }
+    nav a.active { color: #fff; border-bottom-color: var(--orange); }
+
+    /* ── LAYOUT ──────────────────────────────────── */
+    main {
+      max-width: 1140px;
+      margin: 2rem auto;
+      padding: 0 1rem 3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* ── CARDS ───────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    .card-head {
+      background: var(--navy);
+      color: #fff;
+      padding: 0.9rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+    .card-head h2 {
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .card-head .ico { font-size: 1.1rem; }
+    .card-body { padding: 1.5rem; }
+
+    /* ── SECTION LABEL ───────────────────────────── */
+    .section-label {
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      color: var(--blue-bright);
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 0.4rem;
+      margin-bottom: 1rem;
+      margin-top: 1.4rem;
+    }
+    .section-label:first-child { margin-top: 0; }
+
+    /* ── INPUTS ──────────────────────────────────── */
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1.2rem;
+    }
+    .input-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.2rem;
+    }
+    .field { display: flex; flex-direction: column; gap: 0.35rem; }
+    .field label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--muted);
+    }
+    .input-wrap {
+      display: flex;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: border-color 0.18s;
+    }
+    .input-wrap:focus-within { border-color: var(--blue); }
+    .input-wrap input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 0.75rem 0.9rem;
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: var(--text);
+      background: transparent;
+      min-width: 0;
+    }
+    .input-wrap input::placeholder { color: #a0aec0; }
+    .unit-tag {
+      display: flex;
+      align-items: center;
+      padding: 0 0.85rem;
+      background: var(--blue-light);
+      color: var(--blue-bright);
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-left: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    .unit-tag.green {
+      background: var(--green-light);
+      color: #34d399;
+    }
+    .unit-tag.orange {
+      background: var(--orange-light);
+      color: #fb923c;
+    }
+    .field-note {
+      font-size: 0.75rem;
+      color: var(--muted);
+      background: rgba(253,230,138,0.06);
+      border: 1px solid rgba(253,230,138,0.15);
+      border-radius: 5px;
+      padding: 0.4rem 0.65rem;
+      line-height: 1.4;
+    }
+
+    /* ── SUMMARY CARDS ───────────────────────────── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 1rem;
+    }
+    .sum-card {
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+      border-left: 4px solid var(--blue);
+      background: var(--blue-light);
+    }
+    .sum-card.green { background: var(--green-light); border-left-color: var(--green); }
+    .sum-card.orange { background: var(--orange-light); border-left-color: var(--orange); }
+    .sum-card .sc-lbl {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--muted);
+    }
+    .sum-card .sc-val {
+      font-family: var(--mono);
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0.3rem 0 0.15rem;
+      word-break: break-all;
+    }
+    .sum-card.green .sc-val { color: #34d399; }
+    .sum-card.orange .sc-val { color: #fb923c; }
+    .sum-card .sc-val.empty { color: #aab4c4; font-size: 1.1rem; font-weight: 400; font-family: inherit; }
+    .sum-card .sc-unit { font-size: 0.78rem; color: var(--muted); }
+    .sum-card .sc-sub { font-size: 0.72rem; color: var(--muted); margin-top: 0.2rem; }
+
+    /* ── DETAIL TABLE ────────────────────────────── */
+    .tbl-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    thead th {
+      background: var(--blue-light);
+      color: var(--text);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0.75rem 1.1rem;
+      text-align: left;
+      border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    thead th.right { text-align: right; }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.04); }
+    tbody td {
+      padding: 0.85rem 1.1rem;
+      vertical-align: middle;
+    }
+    tbody td.right { text-align: right; }
+    .td-label { font-weight: 600; color: var(--text); }
+    .td-sub { font-size: 0.72rem; color: var(--muted); margin-top: 0.1rem; }
+    .rv {
+      font-family: var(--mono);
+      font-weight: 600;
+      color: var(--text);
+    }
+    .rv.green { color: #34d399; }
+    .rv.orange { color: #fb923c; }
+    .rv.empty { color: #b0bbcc; font-weight: 400; font-family: inherit; }
+
+    /* ── DIAGRAM ─────────────────────────────────── */
+    .diagram-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem 0 0.5rem;
+    }
+    svg text { font-family: 'Segoe UI', system-ui, sans-serif; }
+
+    /* ── FOOTER ──────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.7;
+    }
+    footer strong { color: var(--text); }
+
+    /* ── RESPONSIVE ──────────────────────────────── */
+    @media (max-width: 640px) {
+      table { font-size: 0.78rem; }
+      thead th, tbody td { padding: 0.6rem 0.65rem; }
+      .sum-card .sc-val { font-size: 1.05rem; }
+    }    /* ── SITE NAV ── */
+    .site-nav { background: rgba(12,35,64,0.97); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0.55rem 2rem; display: flex; align-items: center; gap: 1.5rem; }
+    .site-nav-brand { color: #f0f4ff; font-weight: 700; font-size: 0.95rem; text-decoration: none; }
+    .site-nav-brand span { color: #60a5fa; }
+    .site-nav-back { color: #94a3b8; font-size: 0.8rem; text-decoration: none; transition: color 0.2s; }
+    .site-nav-back:hover { color: #f0f4ff; }  </style>
+</head>
+<body>
+
+<div class="site-nav">
+  <a class="site-nav-brand" href="index.html">Lyoid<span>.</span>net</a>
+  <a class="site-nav-back" href="tech.html">&#8592; Back to Tech</a>
+</div>
+
+<header>
+  <div class="brand-badge">Lyoid Fussell's</div>
+  <h1>Generator Set Space Calculator</h1>
+  <p>Power Plant Site Footprint &amp; Unit Count Estimator</p>
+</header>
+
+<nav>
+  <a href="FussellGasCalculator.html">⛽ Fuel Gas Flow Calculator</a>
+  <a href="FussellGenSiteCalculator.html" class="active">📐 Generator Set Space Calculator</a>
+</nav>
+
+<main>
+
+  <!-- ── 1. UNIT DIMENSIONS ─────────────────────── -->
+  <div class="card">
+    <div class="card-head">
+      <span class="ico">📏</span>
+      <h2>Unit Dimensions &amp; Safety Clearances</h2>
+    </div>
+    <div class="card-body">
+
+      <div class="section-label">Generator Set Footprint (including SCR)</div>
+      <div class="input-grid">
+        <div class="field">
+          <label>Unit Length</label>
+          <div class="input-wrap">
+            <input type="number" id="unitLength" value="120" min="0" step="any" />
+            <span class="unit-tag">ft</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Unit Width</label>
+          <div class="input-wrap">
+            <input type="number" id="unitWidth" value="25" min="0" step="any" />
+            <span class="unit-tag">ft</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="section-label">Safety Clearance Requirements</div>
+      <div class="input-grid">
+        <div class="field">
+          <label>End Clearance (each end)</label>
+          <div class="input-wrap">
+            <input type="number" id="endClearance" value="10" min="0" step="any" />
+            <span class="unit-tag green">ft / end</span>
+          </div>
+          <div class="field-note">Added to both ends of the unit along its length.</div>
+        </div>
+        <div class="field">
+          <label>Side Clearance (each side)</label>
+          <div class="input-wrap">
+            <input type="number" id="sideClearance" value="15" min="0" step="any" />
+            <span class="unit-tag green">ft / side</span>
+          </div>
+          <div class="field-note">Added to both sides of the unit along its width.</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── 2. POWER REQUIREMENTS ──────────────────── -->
+  <div class="card">
+    <div class="card-head">
+      <span class="ico">⚡</span>
+      <h2>Power &amp; Redundancy Requirements</h2>
+    </div>
+    <div class="card-body">
+      <div class="input-grid-3">
+
+        <div class="field">
+          <label>MW per Unit</label>
+          <div class="input-wrap">
+            <input type="number" id="mwPerUnit" placeholder="e.g. 25" min="0.001" step="any" />
+            <span class="unit-tag">MW</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Total MW Required</label>
+          <div class="input-wrap">
+            <input type="number" id="totalMW" placeholder="e.g. 100" min="0" step="any" />
+            <span class="unit-tag">MW</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>N+ Spare / Backup Units</label>
+          <div class="input-wrap">
+            <input type="number" id="nPlus" value="0" min="0" step="1" />
+            <span class="unit-tag orange">units</span>
+          </div>
+          <div class="field-note">N+1 = enter 1. N+2 = enter 2. Add to minimum required count.</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 3. RESULTS SUMMARY CARDS ──────────────── -->
+  <div class="card">
+    <div class="card-head">
+      <span class="ico">📊</span>
+      <h2>Results Summary</h2>
+    </div>
+    <div class="card-body">
+      <div class="summary-grid">
+
+        <div class="sum-card">
+          <div class="sc-lbl">Min Units Required</div>
+          <div class="sc-val empty" id="s-min-units">—</div>
+          <div class="sc-unit">units (rounded up)</div>
+        </div>
+
+        <div class="sum-card orange">
+          <div class="sc-lbl">Total Units (N+)</div>
+          <div class="sc-val empty" id="s-total-units">—</div>
+          <div class="sc-unit">units including spares</div>
+          <div class="sc-sub" id="s-total-mw-cap">—</div>
+        </div>
+
+        <div class="sum-card">
+          <div class="sc-lbl">Per-Unit Envelope</div>
+          <div class="sc-val empty" id="s-unit-sqft">—</div>
+          <div class="sc-unit">sq ft / unit</div>
+          <div class="sc-sub" id="s-unit-dims">—</div>
+        </div>
+
+        <div class="sum-card green">
+          <div class="sc-lbl">Total Site Footprint</div>
+          <div class="sc-val empty" id="s-total-sqft">—</div>
+          <div class="sc-unit">sq ft</div>
+        </div>
+
+        <div class="sum-card green">
+          <div class="sc-lbl">Total Site Area</div>
+          <div class="sc-val empty" id="s-acres">—</div>
+          <div class="sc-unit">acres</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 4. UNIT CLEARANCE DIAGRAM ─────────────── -->
+  <div class="card">
+    <div class="card-head">
+      <span class="ico">🔲</span>
+      <h2>Unit Envelope Diagram</h2>
+    </div>
+    <div class="card-body">
+      <div class="diagram-wrap">
+        <svg id="diagram" width="480" height="300" viewBox="0 0 480 300" style="max-width:100%;height:auto;">
+          <!-- Rendered dynamically by JS -->
+          <text x="240" y="155" text-anchor="middle" fill="#a0aec0" font-size="14">Enter dimensions above to see diagram</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 5. BREAKDOWN TABLE ─────────────────────── -->
+  <div class="card">
+    <div class="card-head">
+      <span class="ico">📋</span>
+      <h2>Calculation Breakdown</h2>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th class="right">Value</th>
+            <th>Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="td-label">Unit footprint</span></td>
+            <td class="right"><span class="rv empty" id="d-unit-footprint">—</span></td>
+            <td><span class="td-sub">Length × Width (bare unit)</span></td>
+          </tr>
+          <tr>
+            <td><span class="td-label">Clearance envelope</span></td>
+            <td class="right"><span class="rv empty" id="d-envelope">—</span></td>
+            <td><span class="td-sub">(L + 2×end) × (W + 2×side)</span></td>
+          </tr>
+          <tr>
+            <td><span class="td-label">Envelope dimensions</span></td>
+            <td class="right"><span class="rv empty" id="d-envelope-dims">—</span></td>
+            <td><span class="td-sub">Total length × total width per unit</span></td>
+          </tr>
+          <tr>
+            <td><span class="td-label">Min units (MW math)</span></td>
+            <td class="right"><span class="rv empty" id="d-mw-math">—</span></td>
+            <td><span class="td-sub">Total MW ÷ MW per unit, rounded up (ceiling)</span></td>
+          </tr>
+          <tr>
+            <td><span class="td-label">N+ spares added</span></td>
+            <td class="right"><span class="rv empty" id="d-nplus">—</span></td>
+            <td><span class="td-sub">User-defined backup / redundancy units</span></td>
+          </tr>
+          <tr>
+            <td><span class="td-label">Total units</span></td>
+            <td class="right"><span class="rv orange empty" id="d-total-units">—</span></td>
+            <td><span class="td-sub">Min required + N+ spares</span></td>
+          </tr>
+          <tr>
+            <td><span class="td-label">Total installed MW capacity</span></td>
+            <td class="right"><span class="rv empty" id="d-installed-mw">—</span></td>
+            <td><span class="td-sub">Total units × MW per unit</span></td>
+          </tr>
+          <tr>
+            <td><span class="td-label">Total square footage</span></td>
+            <td class="right"><span class="rv green empty" id="d-total-sqft">—</span></td>
+            <td><span class="td-sub">Total units × unit envelope sq ft</span></td>
+          </tr>
+          <tr>
+            <td><span class="td-label">Total acres</span></td>
+            <td class="right"><span class="rv green empty" id="d-acres">—</span></td>
+            <td><span class="td-sub">Total sq ft ÷ 43,560</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <strong>Lyoid Fussell's Generator Set Space Calculator</strong> &bull; Site area = aggregate of all unit envelopes (conservative planning estimate)<br />
+  Clearances applied to all four sides of each unit &bull; 1 acre = 43,560 sq ft &bull; Units rounded up (ceiling) to meet MW requirement
+</footer>
+
+<script>
+  'use strict';
+
+  const SQ_FT_PER_ACRE = 43560;
+
+  function fmt(value, decimals) {
+    if (!isFinite(value)) return '—';
+    return value.toLocaleString('en-US', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    });
+  }
+
+  function setVal(id, text, isEmpty) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = text;
+    if (isEmpty) { el.classList.add('empty'); }
+    else         { el.classList.remove('empty'); }
+  }
+
+  function clearAll() {
+    const ids = [
+      's-min-units','s-total-units','s-total-mw-cap','s-unit-sqft','s-unit-dims',
+      's-total-sqft','s-acres',
+      'd-unit-footprint','d-envelope','d-envelope-dims','d-mw-math',
+      'd-nplus','d-total-units','d-installed-mw','d-total-sqft','d-acres'
+    ];
+    setVal('s-total-mw-cap', '—', true);
+    setVal('s-unit-dims', '—', true);
+    ids.forEach(id => setVal(id, '—', true));
+    drawDiagram(null);
+  }
+
+  function calculate() {
+    const unitLength   = parseFloat(document.getElementById('unitLength').value);
+    const unitWidth    = parseFloat(document.getElementById('unitWidth').value);
+    const endClear     = parseFloat(document.getElementById('endClearance').value) || 0;
+    const sideClear    = parseFloat(document.getElementById('sideClearance').value) || 0;
+    const mwPerUnit    = parseFloat(document.getElementById('mwPerUnit').value);
+    const totalMW      = parseFloat(document.getElementById('totalMW').value);
+    const nPlus        = parseInt(document.getElementById('nPlus').value) || 0;
+
+    if (!isFinite(unitLength) || unitLength <= 0 ||
+        !isFinite(unitWidth)  || unitWidth  <= 0 ||
+        !isFinite(mwPerUnit)  || mwPerUnit  <= 0 ||
+        !isFinite(totalMW)    || totalMW    <= 0) {
+      clearAll();
+      return;
+    }
+
+    // ── Unit envelope with clearances ────────────
+    const envLength   = unitLength + 2 * endClear;
+    const envWidth    = unitWidth  + 2 * sideClear;
+    const unitSqFt    = unitLength * unitWidth;
+    const envSqFt     = envLength  * envWidth;
+
+    // ── Unit count ───────────────────────────────
+    const rawUnits    = totalMW / mwPerUnit;
+    const minUnits    = Math.ceil(rawUnits);
+    const totalUnits  = minUnits + nPlus;
+    const installedMW = totalUnits * mwPerUnit;
+
+    // ── Site area ────────────────────────────────
+    const totalSqFt   = totalUnits * envSqFt;
+    const acres       = totalSqFt / SQ_FT_PER_ACRE;
+
+    // ── Summary cards ────────────────────────────
+    setVal('s-min-units',   fmt(minUnits, 0),   false);
+    setVal('s-total-units', fmt(totalUnits, 0), false);
+    setVal('s-total-mw-cap', `${fmt(installedMW, 1)} MW installed capacity`, false);
+    setVal('s-unit-sqft',   fmt(envSqFt, 0),    false);
+    setVal('s-unit-dims',   `${fmt(envLength,1)} ft × ${fmt(envWidth,1)} ft`, false);
+    setVal('s-total-sqft',  fmt(totalSqFt, 0),  false);
+    setVal('s-acres',       fmt(acres, 3),       false);
+
+    // ── Breakdown table ───────────────────────────
+    setVal('d-unit-footprint', `${fmt(unitSqFt, 0)} sq ft`, false);
+    setVal('d-envelope',       `${fmt(envSqFt, 0)} sq ft`, false);
+    setVal('d-envelope-dims',  `${fmt(envLength, 1)} ft × ${fmt(envWidth, 1)} ft`, false);
+    setVal('d-mw-math',        `${fmt(totalMW,1)} ÷ ${fmt(mwPerUnit,1)} = ${rawUnits.toFixed(3)} → ${minUnits}`, false);
+    setVal('d-nplus',          `+${nPlus} spare${nPlus !== 1 ? 's' : ''}`, false);
+    setVal('d-total-units',    `${totalUnits} units`, false);
+    setVal('d-installed-mw',   `${fmt(installedMW, 1)} MW`, false);
+    setVal('d-total-sqft',     `${fmt(totalSqFt, 0)} sq ft`, false);
+    setVal('d-acres',          `${fmt(acres, 3)} acres`, false);
+
+    // ── Diagram ───────────────────────────────────
+    drawDiagram({ unitLength, unitWidth, endClear, sideClear, envLength, envWidth });
+  }
+
+  // ── SVG Diagram ────────────────────────────────
+  function drawDiagram(data) {
+    const svg = document.getElementById('diagram');
+    svg.innerHTML = '';
+
+    if (!data) {
+      const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+      t.setAttribute('x', '240'); t.setAttribute('y', '155');
+      t.setAttribute('text-anchor', 'middle');
+      t.setAttribute('fill', '#a0aec0'); t.setAttribute('font-size', '14');
+      t.textContent = 'Enter dimensions above to see diagram';
+      svg.appendChild(t);
+      return;
+    }
+
+    const { unitLength, unitWidth, endClear, sideClear, envLength, envWidth } = data;
+
+    // Scale to fit in SVG canvas with margins
+    const margin = 40;
+    const svgW = 480, svgH = 300;
+    const drawW = svgW - margin * 2;
+    const drawH = svgH - margin * 2;
+    const scale = Math.min(drawW / envLength, drawH / envWidth);
+
+    const cxSvg = svgW / 2;
+    const cySvg = svgH / 2;
+
+    const eW = envLength * scale;
+    const eH = envWidth  * scale;
+    const uW = unitLength * scale;
+    const uH = unitWidth  * scale;
+    const endPx  = endClear  * scale;
+    const sidePx = sideClear * scale;
+
+    const ex = cxSvg - eW / 2;
+    const ey = cySvg - eH / 2;
+    const ux = cxSvg - uW / 2;
+    const uy = cySvg - uH / 2;
+
+    const ns = 'http://www.w3.org/2000/svg';
+    const el = (tag, attrs) => {
+      const e = document.createElementNS(ns, tag);
+      Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
+      return e;
+    };
+    const txt = (x, y, text, attrs = {}) => {
+      const t = el('text', { x, y, 'text-anchor': 'middle', 'font-size': '11',
+        'font-family': 'Segoe UI, system-ui, sans-serif', fill: '#64748b', ...attrs });
+      t.textContent = text;
+      return t;
+    };
+    const line = (x1, y1, x2, y2, attrs = {}) =>
+      el('line', { x1, y1, x2, y2, stroke: '#94a3b8', 'stroke-width': '1',
+        'stroke-dasharray': '4,3', ...attrs });
+
+    // Envelope rect (clearance zone)
+    svg.appendChild(el('rect', {
+      x: ex, y: ey, width: eW, height: eH,
+      fill: 'rgba(29,78,216,0.25)', stroke: '#3b82f6', 'stroke-width': '2',
+      rx: '4', opacity: '0.7'
+    }));
+
+    // Unit rect
+    svg.appendChild(el('rect', {
+      x: ux, y: uy, width: uW, height: uH,
+      fill: '#1a3a6c', stroke: '#0f2744', 'stroke-width': '2', rx: '3'
+    }));
+
+    // Unit center label
+    const unitLabel = el('text', {
+      x: cxSvg, y: cySvg + 5,
+      'text-anchor': 'middle', 'font-size': '12', fill: '#fff',
+      'font-weight': '600', 'font-family': 'Segoe UI, system-ui, sans-serif'
+    });
+    unitLabel.textContent = 'GENSET + SCR';
+    svg.appendChild(unitLabel);
+
+    // End clearance arrows/labels (top & bottom)
+    if (endClear > 0) {
+      // Top arrow
+      svg.appendChild(line(cxSvg, ey, cxSvg, uy));
+      svg.appendChild(txt(cxSvg, ey + endPx / 2 + 5, `${endClear} ft end`, { fill: '#60a5fa' }));
+      // Bottom arrow
+      svg.appendChild(line(cxSvg, uy + uH, cxSvg, ey + eH));
+      svg.appendChild(txt(cxSvg, uy + uH + endPx / 2 + 5, `${endClear} ft end`, { fill: '#60a5fa' }));
+    }
+
+    // Side clearance arrows/labels (left & right)
+    if (sideClear > 0) {
+      svg.appendChild(line(ex, cySvg, ux, cySvg));
+      svg.appendChild(txt(ex + sidePx / 2, cySvg - 6, `${sideClear} ft`, { fill: '#34d399' }));
+      svg.appendChild(line(ux + uW, cySvg, ex + eW, cySvg));
+      svg.appendChild(txt(ux + uW + sidePx / 2, cySvg - 6, `${sideClear} ft`, { fill: '#34d399' }));
+    }
+
+    // Dimension annotations — width of envelope (top)
+    svg.appendChild(el('line', {
+      x1: ex, y1: ey - 12, x2: ex + eW, y2: ey - 12,
+      stroke: '#3b82f6', 'stroke-width': '1.5'
+    }));
+    svg.appendChild(txt(cxSvg, ey - 16, `${envLength.toLocaleString('en-US', {maximumFractionDigits:1})} ft total length`,
+      { fill: '#60a5fa', 'font-weight': '600', 'font-size': '10' }));
+
+    // Dimension annotation — height of envelope (right side)
+    const rax = ex + eW + 14;
+    svg.appendChild(el('line', {
+      x1: rax, y1: ey, x2: rax, y2: ey + eH,
+      stroke: '#34d399', 'stroke-width': '1.5'
+    }));
+    svg.appendChild(txt(rax + 5, cySvg, `${envWidth.toLocaleString('en-US', {maximumFractionDigits:1})} ft`,
+      { fill: '#34d399', 'font-weight': '600', 'font-size': '10',
+        transform: `rotate(90, ${rax + 5}, ${cySvg})` }));
+  }
+
+  // ── Event listeners ────────────────────────────
+  ['unitLength','unitWidth','endClearance','sideClearance','mwPerUnit','totalMW','nPlus']
+    .forEach(id => document.getElementById(id).addEventListener('input', calculate));
+
+  calculate();
+</script>
+
+</body>
+</html>

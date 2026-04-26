@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fuel Gas Flow Calculator — Lyoid Fussell</title>
+  <style>
+    :root {
+      --navy: #0c2340;
+      --navy-mid: #163356;
+      --blue: #3b82f6;
+      --blue-light: rgba(29,78,216,0.18);
+      --blue-bright: #60a5fa;
+      --orange: #d97706;
+      --orange-light: rgba(217,119,6,0.12);
+      --green: #059669;
+      --green-light: rgba(5,150,105,0.12);
+      --bg: #0c2340;
+      --card: rgba(255,255,255,0.05);
+      --border: rgba(255,255,255,0.10);
+      --text: #f0f4ff;
+      --muted: #94a3b8;
+      --mono: 'Courier New', 'Consolas', monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ──────────────────────────────────── */
+    header {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%);
+      color: #fff;
+      padding: 2.2rem 2rem 2rem;
+      text-align: center;
+    }
+    .brand-badge {
+      display: inline-block;
+      background: var(--orange);
+      color: #fff;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 0.2rem 0.7rem;
+      border-radius: 4px;
+      margin-bottom: 0.6rem;
+    }
+    header h1 {
+      font-size: clamp(1.4rem, 3vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    header p {
+      margin-top: 0.4rem;
+      opacity: 0.8;
+      font-size: 0.95rem;
+    }
+
+    /* ── NAV ─────────────────────────────────────── */
+    nav {
+      background: #0a1e38;
+      display: flex;
+      justify-content: center;
+      gap: 0.25rem;
+      padding: 0 1rem;
+      flex-wrap: wrap;
+    }
+    nav a {
+      color: rgba(255,255,255,0.65);
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      padding: 0.7rem 1.2rem;
+      border-bottom: 3px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+    }
+    nav a:hover { color: #fff; }
+    nav a.active { color: #fff; border-bottom-color: var(--orange); }
+
+    /* ── LAYOUT ──────────────────────────────────── */
+    main {
+      max-width: 1140px;
+      margin: 2rem auto;
+      padding: 0 1rem 3rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    /* ── CARDS ───────────────────────────────────── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+      overflow: hidden;
+    }
+    .card-head {
+      background: var(--navy);
+      color: #fff;
+      padding: 0.9rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+    }
+    .card-head h2 {
+      font-size: 0.82rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .card-head .ico { font-size: 1.1rem; }
+    .card-body { padding: 1.5rem; }
+
+    /* ── INPUTS ──────────────────────────────────── */
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 1.2rem;
+    }
+    .field { display: flex; flex-direction: column; gap: 0.35rem; }
+    .field label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--muted);
+    }
+    .input-wrap {
+      display: flex;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: border-color 0.18s;
+    }
+    .input-wrap:focus-within { border-color: var(--blue); }
+    .input-wrap input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 0.75rem 0.9rem;
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: var(--text);
+      background: transparent;
+      min-width: 0;
+    }
+    .input-wrap input::placeholder { color: #a0aec0; }
+    .unit-tag {
+      display: flex;
+      align-items: center;
+      padding: 0 0.85rem;
+      background: var(--blue-light);
+      color: var(--blue-bright);
+      font-size: 0.8rem;
+      font-weight: 600;
+      border-left: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    .field-note {
+      font-size: 0.75rem;
+      color: var(--muted);
+      background: rgba(253,230,138,0.06);
+      border: 1px solid rgba(253,230,138,0.15);
+      border-radius: 5px;
+      padding: 0.4rem 0.65rem;
+      line-height: 1.4;
+    }
+
+    /* ── SUMMARY CARDS ───────────────────────────── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 1rem;
+    }
+    .sum-card {
+      background: var(--blue-light);
+      border-left: 4px solid var(--blue);
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+    }
+    .sum-card .sc-lbl {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--muted);
+    }
+    .sum-card .sc-val {
+      font-family: var(--mono);
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0.3rem 0 0.15rem;
+      word-break: break-all;
+    }
+    .sum-card .sc-val.empty { color: #aab4c4; font-size: 1.1rem; font-weight: 400; }
+    .sum-card .sc-unit { font-size: 0.78rem; color: var(--muted); }
+
+    /* ── RESULTS TABLE ───────────────────────────── */
+    .tbl-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+    thead th {
+      background: var(--blue-light);
+      color: var(--text);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0.75rem 1.1rem;
+      text-align: right;
+      border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    thead th:first-child { text-align: left; }
+    thead th.col-hr {
+      background: rgba(29,78,216,0.28);
+      color: var(--blue-bright);
+      border-bottom-color: var(--blue);
+    }
+    tbody tr { border-bottom: 1px solid var(--border); }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: rgba(255,255,255,0.04); }
+    tbody td {
+      padding: 0.85rem 1.1rem;
+      text-align: right;
+      vertical-align: top;
+    }
+    tbody td:first-child { text-align: left; }
+    .td-label {
+      font-weight: 600;
+      color: var(--text);
+      display: block;
+      white-space: nowrap;
+    }
+    .td-sub {
+      font-size: 0.72rem;
+      color: var(--muted);
+      display: block;
+      margin-top: 0.1rem;
+    }
+    .rv {
+      font-family: var(--mono);
+      font-weight: 600;
+      color: var(--text);
+      display: block;
+    }
+    .rv.hr-col { color: var(--blue-bright); }
+    .rv.empty { color: #b0bbcc; font-weight: 400; font-family: inherit; }
+
+    /* ── COST SECTION ────────────────────────────── */
+    .cost-controls {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.9rem;
+      margin-bottom: 1.4rem;
+    }
+    .cost-controls label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+    .cost-input-wrap {
+      display: flex;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: border-color 0.18s;
+    }
+    .cost-input-wrap:focus-within { border-color: var(--orange); }
+    .dollar-tag {
+      display: flex;
+      align-items: center;
+      padding: 0 0.85rem;
+      background: var(--orange-light);
+      color: var(--orange);
+      font-weight: 700;
+      font-size: 1.05rem;
+      border-right: 2px solid var(--border);
+    }
+    .cost-input-wrap input {
+      border: none;
+      outline: none;
+      padding: 0.75rem 0.75rem;
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: var(--text);
+      width: 130px;
+      background: transparent;
+    }
+    .cost-input-wrap input::placeholder { color: #a0aec0; }
+    .per-label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--muted);
+      align-self: center;
+    }
+    select {
+      padding: 0.75rem 1rem;
+      border: 2px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text);
+      background: rgba(12,35,64,0.95);
+      cursor: pointer;
+      outline: none;
+      transition: border-color 0.18s;
+    }
+    select:focus { border-color: var(--orange); }
+    .cost-row td { background: var(--orange-light); }
+    .cost-row:hover td { background: rgba(217,119,6,0.22) !important; }
+    .cv {
+      font-family: var(--mono);
+      font-weight: 700;
+      color: var(--orange);
+      display: block;
+    }
+    .cv.hr-col { color: #fb923c; }
+    .cv.empty { color: #b0bbcc; font-weight: 400; font-family: inherit; color: #b0bbcc; }
+
+    /* ── FOOTER ──────────────────────────────────── */
+    footer {
+      text-align: center;
+      padding: 2rem 1rem;
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.7;
+    }
+    footer strong { color: var(--text); }
+
+    /* ── RESPONSIVE ──────────────────────────────── */
+    @media (max-width: 640px) {
+      table { font-size: 0.78rem; }
+      thead th, tbody td { padding: 0.6rem 0.65rem; }
+      .cost-controls { flex-direction: column; align-items: flex-start; }
+      .sum-card .sc-val { font-size: 1rem; }
+    }    /* ── SITE NAV ── */
+    .site-nav { background: rgba(12,35,64,0.97); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0.55rem 2rem; display: flex; align-items: center; gap: 1.5rem; }
+    .site-nav-brand { color: #f0f4ff; font-weight: 700; font-size: 0.95rem; text-decoration: none; }
+    .site-nav-brand span { color: #60a5fa; }
+    .site-nav-back { color: #94a3b8; font-size: 0.8rem; text-decoration: none; transition: color 0.2s; }
+    .site-nav-back:hover { color: #f0f4ff; }  </style>
+</head>
+<body>
+
+<div class="site-nav">
+  <a class="site-nav-brand" href="index.html">Lyoid<span>.</span>net</a>
+  <a class="site-nav-back" href="tech.html">&#8592; Back to Tech</a>
+</div>
+
+<header>
+  <div class="brand-badge">Lyoid Fussell's</div>
+  <h1>Fuel Gas Flow Calculator</h1>
+  <p>Natural Gas Turbine &mdash; Fuel Consumption &amp; Cost Estimator</p>
+</header>
+
+<nav>
+  <a href="FussellGasCalculator.html" class="active">⛽ Fuel Gas Flow Calculator</a>
+  <a href="FussellGenSiteCalculator.html">📐 Generator Set Space Calculator</a>
+</nav>
+
+<main>
+
+  <!-- ── 1. INPUTS ─────────────────────────────── -->
+  <div class="card">
+    <div class="card-head">
+      <span class="ico">⚙️</span>
+      <h2>Turbine Parameters</h2>
+    </div>
+    <div class="card-body">
+      <div class="input-grid">
+
+        <div class="field">
+          <label>Heat Rate</label>
+          <div class="input-wrap">
+            <input type="number" id="heatRate" placeholder="e.g. 10000" min="0" step="any" />
+            <span class="unit-tag">BTU / kWh</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Facility Load (Max)</label>
+          <div class="input-wrap">
+            <input type="number" id="totalMW" placeholder="e.g. 100" min="0" step="any" />
+            <span class="unit-tag">MW</span>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Natural Gas Heating Value</label>
+          <div class="input-wrap">
+            <input type="number" id="heatingValue" value="1020" min="1" step="any" />
+            <span class="unit-tag">BTU / scf</span>
+          </div>
+          <div class="field-note">
+            Default 1,020 BTU/scf (HHV). Use ~909 BTU/scf for LHV. Adjust for your specific gas composition.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 2. HOURLY SUMMARY CARDS ────────────────── -->
+  <div class="card">
+    <div class="card-head">
+      <span class="ico">📊</span>
+      <h2>Fuel Consumption at Max Load — Hourly</h2>
+    </div>
+    <div class="card-body">
+      <div class="summary-grid">
+
+        <div class="sum-card">
+          <div class="sc-lbl">Thermal Energy</div>
+          <div class="sc-val empty" id="s-btu">—</div>
+          <div class="sc-unit">BTU / hr</div>
+        </div>
+
+        <div class="sum-card">
+          <div class="sc-lbl">Dekatherms (Dth)</div>
+          <div class="sc-val empty" id="s-dth">—</div>
+          <div class="sc-unit">Dth / hr &nbsp;(= MMBtu / hr)</div>
+        </div>
+
+        <div class="sum-card">
+          <div class="sc-lbl">Volume — scf</div>
+          <div class="sc-val empty" id="s-scf">—</div>
+          <div class="sc-unit">scf / hr</div>
+        </div>
+
+        <div class="sum-card">
+          <div class="sc-lbl">Volume — Mscf</div>
+          <div class="sc-val empty" id="s-mscf">—</div>
+          <div class="sc-unit">Mscf / hr</div>
+        </div>
+
+        <div class="sum-card">
+          <div class="sc-lbl">Volume — MMscf</div>
+          <div class="sc-val empty" id="s-mmscf">—</div>
+          <div class="sc-unit">MMscf / hr</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── 3. FLOW RATE TABLE ─────────────────────── -->
+  <div class="card">
+    <div class="card-head">
+      <span class="ico">📈</span>
+      <h2>Gas Flow Rate Schedule</h2>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Unit</th>
+            <th class="col-hr">Per Hour</th>
+            <th>Per Day <span style="font-weight:400;opacity:.7">(24 hrs)</span></th>
+            <th>Per Month <span style="font-weight:400;opacity:.7">(avg 730.5 hrs)</span></th>
+            <th>Per Year <span style="font-weight:400;opacity:.7">(8,760 hrs)</span></th>
+          </tr>
+        </thead>
+        <tbody>
+
+          <tr>
+            <td>
+              <span class="td-label">BTU</span>
+              <span class="td-sub">British Thermal Units</span>
+            </td>
+            <td><span class="rv hr-col empty" id="t-btu-hr">—</span></td>
+            <td><span class="rv empty" id="t-btu-day">—</span></td>
+            <td><span class="rv empty" id="t-btu-month">—</span></td>
+            <td><span class="rv empty" id="t-btu-year">—</span></td>
+          </tr>
+
+          <tr>
+            <td>
+              <span class="td-label">Dth &nbsp;/&nbsp; MMBtu</span>
+              <span class="td-sub">Dekatherms (1 Dth = 1,000,000 BTU)</span>
+            </td>
+            <td><span class="rv hr-col empty" id="t-dth-hr">—</span></td>
+            <td><span class="rv empty" id="t-dth-day">—</span></td>
+            <td><span class="rv empty" id="t-dth-month">—</span></td>
+            <td><span class="rv empty" id="t-dth-year">—</span></td>
+          </tr>
+
+          <tr>
+            <td>
+              <span class="td-label">scf</span>
+              <span class="td-sub">Standard Cubic Feet</span>
+            </td>
+            <td><span class="rv hr-col empty" id="t-scf-hr">—</span></td>
+            <td><span class="rv empty" id="t-scf-day">—</span></td>
+            <td><span class="rv empty" id="t-scf-month">—</span></td>
+            <td><span class="rv empty" id="t-scf-year">—</span></td>
+          </tr>
+
+          <tr>
+            <td>
+              <span class="td-label">Mscf</span>
+              <span class="td-sub">Thousand Standard Cubic Feet</span>
+            </td>
+            <td><span class="rv hr-col empty" id="t-mscf-hr">—</span></td>
+            <td><span class="rv empty" id="t-mscf-day">—</span></td>
+            <td><span class="rv empty" id="t-mscf-month">—</span></td>
+            <td><span class="rv empty" id="t-mscf-year">—</span></td>
+          </tr>
+
+          <tr>
+            <td>
+              <span class="td-label">MMscf</span>
+              <span class="td-sub">Million Standard Cubic Feet</span>
+            </td>
+            <td><span class="rv hr-col empty" id="t-mmscf-hr">—</span></td>
+            <td><span class="rv empty" id="t-mmscf-day">—</span></td>
+            <td><span class="rv empty" id="t-mmscf-month">—</span></td>
+            <td><span class="rv empty" id="t-mmscf-year">—</span></td>
+          </tr>
+
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ── 4. COST CALCULATOR ────────────────────── -->
+  <div class="card">
+    <div class="card-head">
+      <span class="ico">💰</span>
+      <h2>Gas Cost Calculator</h2>
+    </div>
+    <div class="card-body">
+
+      <div class="cost-controls">
+        <label>Unit Price:</label>
+        <div class="cost-input-wrap">
+          <span class="dollar-tag">$</span>
+          <input type="number" id="costValue" placeholder="0.00" min="0" step="any" />
+        </div>
+        <span class="per-label">per</span>
+        <select id="costUnit">
+          <option value="dth">Dekatherm — $/Dth (most common)</option>
+          <option value="mmbtu">MMBtu — $/MMBtu</option>
+          <option value="mmscf">MMscf — $/MMscf</option>
+          <option value="mscf">Mscf — $/Mscf</option>
+          <option value="scf">scf — $/scf</option>
+          <option value="mbtu">MBtu — $/MBtu (1,000 BTU)</option>
+          <option value="btu">BTU — $/BTU</option>
+        </select>
+      </div>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Cost</th>
+              <th class="col-hr">Per Hour</th>
+              <th>Per Day</th>
+              <th>Per Month (avg)</th>
+              <th>Per Year</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="cost-row">
+              <td>
+                <span class="td-label">Gas Fuel Cost</span>
+                <span class="td-sub">Based on entered unit price &amp; turbine parameters</span>
+              </td>
+              <td><span class="cv hr-col empty" id="c-hr">—</span></td>
+              <td><span class="cv empty" id="c-day">—</span></td>
+              <td><span class="cv empty" id="c-month">—</span></td>
+              <td><span class="cv empty" id="c-year">—</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <strong>Lyoid Fussell's Fuel Gas Flow Calculator</strong> &bull; Assumes continuous operation at stated load &bull; All volumes at standard conditions (14.73 psia, 60 °F)<br />
+  Month = 730.5 hrs (365.25 ÷ 12 × 24) &bull; Year = 8,760 hrs &bull; 1 Dth = 1 MMBtu = 1,000,000 BTU &bull; Heating value default: 1,020 BTU/scf (HHV)
+</footer>
+
+<script>
+  'use strict';
+
+  // ── Constants ──────────────────────────────────
+  const HRS_DAY   = 24;
+  const HRS_MONTH = 730.5;   // avg (365.25 / 12 * 24)
+  const HRS_YEAR  = 8760;
+  const PERIODS   = ['hr', 'day', 'month', 'year'];
+  const MULTIPLIERS = [1, HRS_DAY, HRS_MONTH, HRS_YEAR];
+
+  // ── Number formatting ──────────────────────────
+  function fmt(value, decimals) {
+    if (!isFinite(value)) return '—';
+    return value.toLocaleString('en-US', {
+      minimumFractionDigits: decimals,
+      maximumFractionDigits: decimals
+    });
+  }
+
+  function smartFmt(value, unit) {
+    if (!isFinite(value)) return '—';
+    const a = Math.abs(value);
+    let d;
+    switch (unit) {
+      case 'btu':
+        d = 0;
+        break;
+      case 'dth':
+        d = (a >= 1e6) ? 0 : (a >= 1e3) ? 1 : 2;
+        break;
+      case 'scf':
+        d = 0;
+        break;
+      case 'mscf':
+        d = (a >= 1e5) ? 0 : (a >= 1e3) ? 1 : 3;
+        break;
+      case 'mmscf':
+        d = (a >= 1000) ? 2 : (a >= 10) ? 3 : 4;
+        break;
+      default:
+        d = 2;
+    }
+    return value.toLocaleString('en-US', {
+      minimumFractionDigits: d,
+      maximumFractionDigits: d
+    });
+  }
+
+  function fmtCurrency(value) {
+    if (!isFinite(value)) return '—';
+    // For very large costs, no cents; otherwise 2 decimals
+    const a = Math.abs(value);
+    const d = (a >= 1e6) ? 0 : 2;
+    return '$' + value.toLocaleString('en-US', {
+      minimumFractionDigits: d,
+      maximumFractionDigits: d
+    });
+  }
+
+  // ── DOM helpers ────────────────────────────────
+  function setVal(id, text, isEmpty) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = text;
+    if (isEmpty) {
+      el.classList.add('empty');
+    } else {
+      el.classList.remove('empty');
+    }
+  }
+
+  function clearAll() {
+    const ids = [
+      's-btu','s-dth','s-scf','s-mscf','s-mmscf'
+    ];
+    const units = ['btu','dth','scf','mscf','mmscf'];
+    units.forEach(u => {
+      PERIODS.forEach(p => ids.push(`t-${u}-${p}`));
+    });
+    PERIODS.forEach(p => ids.push(`c-${p}`));
+    ids.forEach(id => setVal(id, '—', true));
+  }
+
+  // ── Core calculation ───────────────────────────
+  function calculate() {
+    const heatRate     = parseFloat(document.getElementById('heatRate').value);
+    const totalMW      = parseFloat(document.getElementById('totalMW').value);
+    const heatingValue = parseFloat(document.getElementById('heatingValue').value);
+    const costValue    = parseFloat(document.getElementById('costValue').value);
+    const costUnit     = document.getElementById('costUnit').value;
+
+    // Validate primary inputs
+    if (!isFinite(heatRate) || heatRate <= 0 ||
+        !isFinite(totalMW)  || totalMW  <= 0 ||
+        !isFinite(heatingValue) || heatingValue <= 0) {
+      clearAll();
+      return;
+    }
+
+    // ── Flow rates per hour ─────────────────────
+    const btuPerHr   = heatRate * totalMW * 1000;          // BTU/kWh × kW → BTU/hr
+    const dthPerHr   = btuPerHr / 1_000_000;               // 1 Dth = 1,000,000 BTU
+    const scfPerHr   = btuPerHr / heatingValue;            // BTU ÷ BTU/scf
+    const mscfPerHr  = scfPerHr / 1_000;
+    const mmscfPerHr = scfPerHr / 1_000_000;
+
+    // ── Summary cards ───────────────────────────
+    setVal('s-btu',   smartFmt(btuPerHr,   'btu'),   false);
+    setVal('s-dth',   smartFmt(dthPerHr,   'dth'),   false);
+    setVal('s-scf',   smartFmt(scfPerHr,   'scf'),   false);
+    setVal('s-mscf',  smartFmt(mscfPerHr,  'mscf'),  false);
+    setVal('s-mmscf', smartFmt(mmscfPerHr, 'mmscf'), false);
+
+    // ── Flow rate table ─────────────────────────
+    const baseRates = {
+      btu:   btuPerHr,
+      dth:   dthPerHr,
+      scf:   scfPerHr,
+      mscf:  mscfPerHr,
+      mmscf: mmscfPerHr
+    };
+
+    Object.entries(baseRates).forEach(([unit, ratePerHr]) => {
+      PERIODS.forEach((period, i) => {
+        const val = ratePerHr * MULTIPLIERS[i];
+        setVal(`t-${unit}-${period}`, smartFmt(val, unit), false);
+      });
+    });
+
+    // ── Cost calculation ────────────────────────
+    const hasCost = isFinite(costValue) && costValue >= 0 &&
+                    document.getElementById('costValue').value.trim() !== '';
+
+    if (hasCost) {
+      let costPerHr;
+      switch (costUnit) {
+        case 'btu':    costPerHr = costValue * btuPerHr;            break;
+        case 'mbtu':   costPerHr = costValue * (btuPerHr / 1_000);  break;
+        case 'mmbtu':  costPerHr = costValue * dthPerHr;            break; // 1 MMBtu = 1 Dth
+        case 'dth':    costPerHr = costValue * dthPerHr;            break;
+        case 'scf':    costPerHr = costValue * scfPerHr;            break;
+        case 'mscf':   costPerHr = costValue * mscfPerHr;           break;
+        case 'mmscf':  costPerHr = costValue * mmscfPerHr;          break;
+        default:       costPerHr = 0;
+      }
+
+      PERIODS.forEach((period, i) => {
+        setVal(`c-${period}`, fmtCurrency(costPerHr * MULTIPLIERS[i]), false);
+      });
+    } else {
+      PERIODS.forEach(p => setVal(`c-${p}`, '—', true));
+    }
+  }
+
+  // ── Event listeners ────────────────────────────
+  ['heatRate', 'totalMW', 'heatingValue', 'costValue', 'costUnit']
+    .forEach(id => document.getElementById(id).addEventListener('input', calculate));
+
+  // Initial run (handles default heatingValue already filled in)
+  calculate();
+</script>
+
+</body>
+</html>
