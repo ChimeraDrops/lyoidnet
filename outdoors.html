@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Outdoors — Lyoid Fussell</title>
+  <meta name="description" content="Custom rod building, fly tying, hunting, hide tanning, and a childhood in the Florida Everglades." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy:         #0c2340;
+      --navy-mid:     #163356;
+      --navy-light:   #1e3f6e;
+      --green:        #15803d;
+      --green-mid:    #16a34a;
+      --green-bright: #4ade80;
+      --text:         #f0f4ff;
+      --text-muted:   #94a3b8;
+      --card-bg:      rgba(255,255,255,0.04);
+      --card-border:  rgba(255,255,255,0.09);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--navy);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(12,35,64,0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding: 0.75rem 2.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand {
+      font-weight: 700; font-size: 1.05rem; letter-spacing: -0.3px;
+      color: var(--text); text-decoration: none;
+    }
+    .nav-brand span { color: var(--green-bright); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: var(--text-muted); text-decoration: none;
+      font-size: 0.85rem; font-weight: 500; letter-spacing: 0.3px;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover,
+    .nav-links a.active { color: var(--text); }
+    .nav-cta {
+      background: var(--green); color: #fff;
+      padding: 0.4rem 1.1rem; border-radius: 6px;
+      text-decoration: none; font-size: 0.82rem; font-weight: 600;
+      transition: background 0.2s;
+    }
+    .nav-cta:hover { background: var(--green-mid); }
+
+    /* ── HERO ── */
+    .hero {
+      padding: 7rem 2.5rem 3.5rem;
+      max-width: 860px; margin: 0 auto;
+      text-align: center;
+    }
+    .hero-badges {
+      display: flex; flex-wrap: wrap; justify-content: center;
+      gap: 0.5rem; margin-bottom: 1.5rem;
+    }
+    .badge {
+      background: rgba(74,222,128,0.1);
+      border: 1px solid rgba(74,222,128,0.25);
+      color: var(--green-bright);
+      padding: 0.3rem 0.8rem; border-radius: 20px;
+      font-size: 0.75rem; font-weight: 600; letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(2.4rem, 5vw, 3.8rem);
+      font-weight: 800; line-height: 1.1; color: var(--text);
+      margin-bottom: 1rem;
+    }
+    .hero h1 em { font-style: normal; color: var(--green-bright); }
+    .hero p {
+      font-size: clamp(1rem, 2vw, 1.15rem);
+      color: var(--text-muted); max-width: 620px; margin: 0 auto;
+    }
+
+    /* ── ABOUT STRIP ── */
+    .about-strip {
+      background: rgba(21,128,61,0.07);
+      border-top: 1px solid rgba(74,222,128,0.1);
+      border-bottom: 1px solid rgba(74,222,128,0.1);
+      padding: 2.5rem 2.5rem;
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(190px,1fr));
+      gap: 2rem; text-align: center;
+    }
+    .about-item h3 {
+      color: var(--green-bright); font-size: 0.95rem;
+      font-weight: 700; margin-bottom: 0.4rem; letter-spacing: 0.3px;
+    }
+    .about-item p { color: var(--text-muted); font-size: 0.83rem; line-height: 1.55; }
+
+    /* ── GALLERY ── */
+    .gallery-section {
+      padding: 3rem 1.25rem 5rem;
+      max-width: 1440px; margin: 0 auto;
+    }
+    .gallery-header {
+      text-align: center; margin-bottom: 2rem;
+    }
+    .gallery-header h2 {
+      font-size: 1.5rem; font-weight: 700; color: var(--text); margin-bottom: 0.35rem;
+    }
+    .gallery-header p { color: var(--text-muted); font-size: 0.88rem; }
+
+    /* Masonry */
+    .gallery-grid {
+      columns: 4 240px;
+      column-gap: 0.85rem;
+    }
+    .photo-item {
+      break-inside: avoid;
+      margin-bottom: 0.85rem;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      border-radius: 7px;
+      border: 1px solid rgba(255,255,255,0.06);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .photo-item:hover {
+      transform: scale(1.025) rotate(0deg) !important;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+      z-index: 2;
+      border-color: rgba(74,222,128,0.25);
+    }
+    .photo-item img {
+      display: block; width: 100%; height: auto;
+    }
+    .photo-overlay {
+      position: absolute; inset: 0;
+      background: rgba(0,0,0,0);
+      transition: background 0.2s;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .photo-item:hover .photo-overlay { background: rgba(0,0,0,0.28); }
+    .photo-overlay svg {
+      opacity: 0; transition: opacity 0.2s;
+      width: 34px; height: 34px; color: #fff;
+    }
+    .photo-item:hover .photo-overlay svg { opacity: 1; }
+
+    /* Rotation pattern — combined selectors add up to varied angles */
+    .photo-item:nth-child(6n+1) { transform: rotate(-1.3deg); }
+    .photo-item:nth-child(6n+2) { transform: rotate( 0.9deg); }
+    .photo-item:nth-child(6n+3) { transform: rotate(-0.5deg); }
+    .photo-item:nth-child(6n+4) { transform: rotate( 1.5deg); }
+    .photo-item:nth-child(6n+5) { transform: rotate(-1.0deg); }
+    .photo-item:nth-child(6n)   { transform: rotate( 0.4deg); }
+
+    /* ── LIGHTBOX ── */
+    .lightbox {
+      display: none; position: fixed; inset: 0; z-index: 1000;
+      background: rgba(5,10,20,0.95);
+      align-items: center; justify-content: center;
+      backdrop-filter: blur(8px);
+    }
+    .lightbox.open { display: flex; }
+    .lb-wrap {
+      position: relative;
+      display: flex; align-items: center; gap: 1rem;
+      max-width: 96vw;
+    }
+    .lb-img-box { position: relative; }
+    #lb-img {
+      max-width: 82vw; max-height: 88vh;
+      object-fit: contain;
+      border-radius: 6px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.8);
+      display: block;
+    }
+    .lb-close {
+      position: absolute; top: -44px; right: 0;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: #fff; font-size: 0.82rem; font-weight: 600;
+      padding: 0.3rem 0.85rem; border-radius: 6px;
+      cursor: pointer; transition: background 0.2s;
+      letter-spacing: 0.3px;
+    }
+    .lb-close:hover { background: rgba(255,255,255,0.22); }
+    .lb-counter {
+      position: absolute; bottom: -34px; left: 50%;
+      transform: translateX(-50%);
+      color: rgba(255,255,255,0.45); font-size: 0.78rem;
+      white-space: nowrap;
+    }
+    .lb-btn {
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.18);
+      color: #fff; font-size: 1.4rem;
+      width: 50px; height: 50px; border-radius: 50%;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s; flex-shrink: 0; user-select: none;
+    }
+    .lb-btn:hover { background: rgba(255,255,255,0.2); }
+
+    /* ── CTA ── */
+    .cta-section {
+      background: rgba(21,128,61,0.07);
+      border-top: 1px solid rgba(74,222,128,0.1);
+      padding: 3.5rem 2.5rem; text-align: center;
+    }
+    .cta-section h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 0.4rem; }
+    .cta-section p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.6rem; }
+    .cta-buttons {
+      display: flex; flex-wrap: wrap; gap: 0.75rem; justify-content: center;
+    }
+    .btn-primary {
+      background: var(--green); color: #fff;
+      padding: 0.65rem 1.5rem; border-radius: 8px;
+      text-decoration: none; font-weight: 600; font-size: 0.9rem;
+      transition: background 0.2s;
+    }
+    .btn-primary:hover { background: var(--green-mid); }
+    .btn-secondary {
+      border: 1px solid rgba(255,255,255,0.18); color: var(--text-muted);
+      padding: 0.65rem 1.5rem; border-radius: 8px;
+      text-decoration: none; font-weight: 600; font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover { background: rgba(255,255,255,0.06); color: var(--text); }
+
+    /* ── FOOTER ── */
+    footer {
+      background: rgba(0,0,0,0.25);
+      border-top: 1px solid rgba(255,255,255,0.06);
+      padding: 2rem 2.5rem; text-align: center;
+      color: var(--text-muted); font-size: 0.8rem;
+    }
+    footer a { color: var(--text-muted); text-decoration: none; }
+    footer a:hover { color: var(--text); }
+
+    @media (max-width: 640px) {
+      nav { padding: 0.7rem 1.1rem; }
+      .nav-links { gap: 1rem; }
+      .gallery-grid { columns: 2 140px; }
+      #lb-img { max-width: 94vw; max-height: 80vh; }
+      .lb-btn { width: 40px; height: 40px; font-size: 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="index.html" class="nav-brand">Lyoid<span>.</span>net</a>
+    <ul class="nav-links">
+      <li><a href="energy.html">Energy</a></li>
+      <li><a href="tech.html">Tech</a></li>
+      <li><a href="outdoors.html" class="active">Outdoors</a></li>
+      <li><a href="creative.html">Creative</a></li>
+    </ul>
+    <a href="resume.html" class="nav-cta">Resume</a>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-badges">
+      <span class="badge">Custom Rod Building</span>
+      <span class="badge">Fly Tying</span>
+      <span class="badge">Hunting</span>
+      <span class="badge">Hide Tanning</span>
+      <span class="badge">Florida Everglades</span>
+    </div>
+    <h1>Built <em>Outside</em></h1>
+    <p>Grew up in the Florida Everglades. Spent decades in the field. Builds custom fishing rods, ties his own flies, hunts, and tans his own hides. The outdoors isn't a hobby — it's the other half of the resume.</p>
+  </section>
+
+  <!-- ABOUT STRIP -->
+  <div class="about-strip">
+    <div class="about-item">
+      <h3>Custom Rod Building</h3>
+      <p>Hand-crafted fishing rods under the CRW_Patterns brand. Build tutorials and finished rod showcases on YouTube.</p>
+    </div>
+    <div class="about-item">
+      <h3>Fly Tying</h3>
+      <p>Ties his own patterns. The craft overlap between fly tying and rod building is where the obsession lives.</p>
+    </div>
+    <div class="about-item">
+      <h3>Hunting &amp; Hide Tanning</h3>
+      <p>Avid hunter who takes the whole process seriously — field to finished hide. Knows how to tan what he takes.</p>
+    </div>
+    <div class="about-item">
+      <h3>Florida Everglades</h3>
+      <p>Grew up there. The swamp, the water, the wildlife — it's in the foundation of everything that followed.</p>
+    </div>
+  </div>
+
+  <!-- GALLERY -->
+  <section class="gallery-section">
+    <div class="gallery-header">
+      <h2>The Album</h2>
+      <p>Click any photo to open full size &nbsp;·&nbsp; Arrow keys or buttons to navigate &nbsp;·&nbsp; Esc to close</p>
+    </div>
+    <div class="gallery-grid" id="gallery"></div>
+  </section>
+
+  <!-- LIGHTBOX -->
+  <div class="lightbox" id="lightbox">
+    <div class="lb-wrap">
+      <button class="lb-btn" id="lb-prev">&#8592;</button>
+      <div class="lb-img-box">
+        <button class="lb-close" id="lb-close">✕ Close</button>
+        <img id="lb-img" src="" alt="Outdoors photo" />
+        <div class="lb-counter" id="lb-counter"></div>
+      </div>
+      <button class="lb-btn" id="lb-next">&#8594;</button>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <h2>CRW_Patterns on YouTube</h2>
+    <p>Custom rod building tutorials, pattern builds, and finished rod showcases — all on the channel.</p>
+    <div class="cta-buttons">
+      <a href="https://www.youtube.com/@crwpatterns5246" target="_blank" rel="noopener" class="btn-primary">▶ CRW_Patterns YouTube</a>
+      <a href="energy.html" class="btn-secondary">Energy Career</a>
+      <a href="index.html" class="btn-secondary">← Home</a>
+    </div>
+  </section>
+
+  <footer>
+    <p>
+      Lyoid Fussell &nbsp;·&nbsp; Houston, TX &nbsp;·&nbsp;
+      <a href="mailto:Lyoid.Fussell@gmail.com">Lyoid.Fussell@gmail.com</a> &nbsp;·&nbsp;
+      <a href="https://linkedin.com/in/lyoid" target="_blank" rel="noopener">LinkedIn</a>
+    </p>
+  </footer>
+
+  <script>
+    // All browser-displayable images (HEIC and MP4 excluded — not supported by browsers)
+    const photos = [
+      "img/Outdoors/1487475472420.jpg",
+      "img/Outdoors/20160124_173942.jpg",
+      "img/Outdoors/20160124_174044.jpg",
+      "img/Outdoors/20160429_142145.jpg",
+      "img/Outdoors/20160604_152247.jpg",
+      "img/Outdoors/20160604_165408.jpg",
+      "img/Outdoors/20160622_084600.jpg",
+      "img/Outdoors/20160622_113100.jpg",
+      "img/Outdoors/20160701_203828.jpg",
+      "img/Outdoors/20160724_082955.jpg",
+      "img/Outdoors/20160724_085245.jpg",
+      "img/Outdoors/20160924_104807.jpg",
+      "img/Outdoors/20160924_171933.jpg",
+      "img/Outdoors/20161114_134309.jpg",
+      "img/Outdoors/20171031_222800.jpg",
+      "img/Outdoors/20180508_160308.jpg",
+      "img/Outdoors/62535841321__3AC9EE79-9C8C-4244-94F8-7FDB6F1E1666.JPG",
+      "img/Outdoors/IMG953060.jpg",
+      "img/Outdoors/IMG_0075.jpg",
+      "img/Outdoors/IMG_1126.JPG",
+      "img/Outdoors/IMG_1127.JPG",
+      "img/Outdoors/IMG_1128.JPG",
+      "img/Outdoors/IMG_1571.jpg",
+      "img/Outdoors/IMG_20140701_125404_602.jpg",
+      "img/Outdoors/IMG_20140701_130659_310.jpg",
+      "img/Outdoors/IMG_20150716_081026_343.jpg",
+      "img/Outdoors/IMG_2453.JPG",
+      "img/Outdoors/IMG_2461.JPG",
+      "img/Outdoors/received_851133354993233.jpeg",
+      "img/Outdoors/received_860002060773029.jpeg",
+      "img/Outdoors/received_860002144106354.jpeg",
+      "img/Outdoors/received_914764991963402.jpeg",
+      "img/Outdoors/IMG_6398.WEBP"
+    ];
+
+    // Fisher-Yates shuffle — new random order on every page load
+    function shuffle(arr) {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    const shuffled = shuffle(photos);
+    const gallery  = document.getElementById('gallery');
+
+    shuffled.forEach((src, idx) => {
+      const item = document.createElement('div');
+      item.className = 'photo-item';
+      item.innerHTML = `
+        <img src="${src}" alt="Outdoors photo ${idx + 1}" loading="lazy" />
+        <div class="photo-overlay">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
+          </svg>
+        </div>`;
+      item.addEventListener('click', () => openLightbox(idx));
+      gallery.appendChild(item);
+    });
+
+    // ── Lightbox ──
+    let current = 0;
+    const lb       = document.getElementById('lightbox');
+    const lbImg    = document.getElementById('lb-img');
+    const lbCount  = document.getElementById('lb-counter');
+
+    function setImage(idx) {
+      lbImg.src         = shuffled[idx];
+      lbCount.textContent = `${idx + 1} / ${shuffled.length}`;
+      current = idx;
+    }
+
+    function openLightbox(idx) {
+      setImage(idx);
+      lb.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeLightbox() {
+      lb.classList.remove('open');
+      document.body.style.overflow = '';
+      lbImg.src = '';
+    }
+
+    function navigate(dir) {
+      setImage((current + dir + shuffled.length) % shuffled.length);
+    }
+
+    document.getElementById('lb-close').addEventListener('click', closeLightbox);
+    document.getElementById('lb-prev').addEventListener('click', () => navigate(-1));
+    document.getElementById('lb-next').addEventListener('click', () => navigate(1));
+
+    // Click backdrop to close
+    lb.addEventListener('click', (e) => { if (e.target === lb) closeLightbox(); });
+
+    // Keyboard navigation
+    document.addEventListener('keydown', (e) => {
+      if (!lb.classList.contains('open')) return;
+      if (e.key === 'ArrowLeft')  navigate(-1);
+      if (e.key === 'ArrowRight') navigate(1);
+      if (e.key === 'Escape')     closeLightbox();
+    });
+  </script>
+
+</body>
+</html>

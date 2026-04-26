@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lyoid Fussell — Energy Executive · Developer · Outdoorsman · Creator</title>
+  <meta name="description" content="Lyoid Fussell — 25+ years in energy and power infrastructure, developer, outdoorsman, and creator. Based in Houston, TX." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --navy: #0c2340;
+      --navy-mid: #163356;
+      --navy-light: #1e3f6e;
+      --blue: #1d4ed8;
+      --blue-mid: #3b82f6;
+      --blue-bright: #60a5fa;
+      --text: #f0f4ff;
+      --text-muted: #94a3b8;
+      --card-bg: rgba(255,255,255,0.04);
+      --card-border: rgba(255,255,255,0.09);
+      --card-hover: rgba(255,255,255,0.08);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--navy);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      background: rgba(12, 35, 64, 0.92);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+      padding: 0.75rem 2.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .nav-brand {
+      font-weight: 700; font-size: 1.05rem; letter-spacing: -0.3px;
+      color: var(--text); text-decoration: none;
+    }
+    .nav-brand span { color: var(--blue-bright); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a {
+      color: var(--text-muted); text-decoration: none;
+      font-size: 0.85rem; font-weight: 500; letter-spacing: 0.3px;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; justify-content: center;
+      padding: 7rem 2.5rem 4rem;
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(160deg, #0c2340 0%, #0f2d50 50%, #0a1e38 100%);
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 70% 40%, rgba(29,78,216,0.13) 0%, transparent 60%),
+        radial-gradient(ellipse 50% 40% at 20% 80%, rgba(56,189,248,0.07) 0%, transparent 50%);
+      pointer-events: none;
+    }
+    .hero-inner {
+      max-width: 1100px; margin: 0 auto; width: 100%;
+      position: relative; z-index: 1;
+      display: flex; align-items: center; gap: 4rem;
+    }
+    .hero-text { flex: 1; }
+    .hero-eyebrow {
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--blue-bright);
+      margin-bottom: 1rem;
+    }
+    .hero-name {
+      font-size: clamp(2.8rem, 6vw, 4.5rem);
+      font-weight: 800; letter-spacing: -1.5px; line-height: 1.05;
+      margin-bottom: 1.2rem;
+    }
+    .hero-name span {
+      background: linear-gradient(90deg, #60a5fa, #38bdf8);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero-tagline {
+      font-size: clamp(1rem, 2vw, 1.25rem);
+      color: var(--text-muted); line-height: 1.65;
+      max-width: 600px; margin-bottom: 2.2rem;
+    }
+    .hero-tagline strong { color: var(--text); font-weight: 600; }
+    .hero-cta { display: flex; flex-wrap: wrap; gap: 1rem; }
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.7rem 1.5rem; border-radius: 6px;
+      font-size: 0.88rem; font-weight: 600; text-decoration: none;
+      transition: all 0.2s; letter-spacing: 0.2px;
+    }
+    .btn-primary {
+      background: var(--blue); color: #fff;
+      border: 1px solid transparent;
+    }
+    .btn-primary:hover { background: #2563eb; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(29,78,216,0.4); }
+    .btn-outline {
+      background: transparent; color: var(--text);
+      border: 1px solid rgba(255,255,255,0.18);
+    }
+    .btn-outline:hover { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.3); transform: translateY(-1px); }
+
+    .hero-photo-wrap {
+      flex-shrink: 0;
+      position: relative;
+    }
+    .hero-photo {
+      width: 220px; height: 220px; border-radius: 50%;
+      object-fit: cover; object-position: center top;
+      border: 4px solid rgba(96,165,250,0.3);
+      box-shadow: 0 0 0 8px rgba(29,78,216,0.12), 0 24px 60px rgba(0,0,0,0.5);
+    }
+    .hero-photo-ring {
+      position: absolute; inset: -12px; border-radius: 50%;
+      border: 1px solid rgba(96,165,250,0.15);
+      pointer-events: none;
+    }
+
+    /* ── ACCENT DIVIDER ── */
+    .accent-bar {
+      height: 4px;
+      background: linear-gradient(90deg, var(--blue-mid) 0%, #38bdf8 100%);
+    }
+
+    /* ── INTRO STRIP ── */
+    .intro-strip {
+      background: rgba(255,255,255,0.03);
+      border-top: 1px solid var(--card-border);
+      border-bottom: 1px solid var(--card-border);
+      padding: 1.4rem 2.5rem;
+    }
+    .intro-stats {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; flex-wrap: wrap; gap: 0.5rem 3rem;
+      align-items: center; justify-content: center;
+    }
+    .stat { text-align: center; }
+    .stat-num { font-size: 1.4rem; font-weight: 800; color: var(--blue-bright); letter-spacing: -0.5px; }
+    .stat-label { font-size: 0.72rem; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase; }
+    .stat-div { width: 1px; height: 36px; background: var(--card-border); }
+
+    /* ── SECTIONS ── */
+    .section {
+      padding: 5rem 2.5rem;
+    }
+    .section-inner { max-width: 1100px; margin: 0 auto; }
+    .section-label {
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--blue-bright);
+      margin-bottom: 0.5rem;
+    }
+    .section-title {
+      font-size: clamp(1.6rem, 3vw, 2.2rem);
+      font-weight: 800; letter-spacing: -0.5px;
+      margin-bottom: 0.8rem; line-height: 1.2;
+    }
+    .section-sub {
+      font-size: 1rem; color: var(--text-muted);
+      max-width: 600px; margin-bottom: 2.8rem; line-height: 1.65;
+    }
+
+    /* ── CARD GRID ── */
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 1.2rem;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.6rem;
+      text-decoration: none;
+      color: var(--text);
+      transition: all 0.22s;
+      display: flex; flex-direction: column; gap: 0.8rem;
+      position: relative; overflow: hidden;
+    }
+    .card::before {
+      content: '';
+      position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: var(--card-accent, linear-gradient(90deg, var(--blue-mid), #38bdf8));
+      opacity: 0; transition: opacity 0.22s;
+    }
+    .card:hover { background: var(--card-hover); border-color: rgba(255,255,255,0.16); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+    .card:hover::before { opacity: 1; }
+    .card-icon { font-size: 1.8rem; line-height: 1; }
+    .card-title { font-size: 1.05rem; font-weight: 700; letter-spacing: -0.2px; }
+    .card-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; flex: 1; }
+    .card-link {
+      font-size: 0.78rem; font-weight: 600; color: var(--blue-bright);
+      display: flex; align-items: center; gap: 0.3rem;
+      margin-top: 0.3rem;
+    }
+    .card-link::after { content: '→'; }
+
+    /* Card accent colors */
+    .card-energy { --card-accent: linear-gradient(90deg, #1d4ed8, #3b82f6); }
+    .card-tech   { --card-accent: linear-gradient(90deg, #7c3aed, #a78bfa); }
+    .card-outdoors { --card-accent: linear-gradient(90deg, #059669, #34d399); }
+    .card-creative { --card-accent: linear-gradient(90deg, #db2777, #f472b6); }
+
+    /* ── ABOUT STRIP ── */
+    .about-strip {
+      background: linear-gradient(135deg, var(--navy-mid) 0%, var(--navy-light) 100%);
+      border-top: 1px solid var(--card-border);
+      border-bottom: 1px solid var(--card-border);
+    }
+    .about-inner {
+      max-width: 1100px; margin: 0 auto;
+      padding: 4rem 2.5rem;
+      display: grid; grid-template-columns: 1fr 1fr; gap: 4rem;
+      align-items: center;
+    }
+    .about-body { font-size: 0.95rem; color: var(--text-muted); line-height: 1.8; }
+    .about-body p { margin-bottom: 1rem; }
+    .about-body p:last-child { margin-bottom: 0; }
+    .about-body strong { color: var(--text); font-weight: 600; }
+    .about-facts { display: flex; flex-direction: column; gap: 1rem; }
+    .fact {
+      display: flex; align-items: flex-start; gap: 0.9rem;
+      background: var(--card-bg); border: 1px solid var(--card-border);
+      border-radius: 8px; padding: 0.9rem 1rem;
+    }
+    .fact-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .fact-text { font-size: 0.84rem; color: var(--text-muted); line-height: 1.5; }
+    .fact-text strong { color: var(--text); display: block; font-weight: 600; margin-bottom: 0.1rem; }
+
+    /* ── FOOTER ── */
+    footer {
+      background: rgba(0,0,0,0.25);
+      border-top: 1px solid var(--card-border);
+      padding: 2rem 2.5rem;
+      text-align: center;
+    }
+    .footer-inner { max-width: 1100px; margin: 0 auto; }
+    .footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem 2rem; margin-bottom: 1rem; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.84rem; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copy { font-size: 0.78rem; color: rgba(148,163,184,0.5); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 768px) {
+      nav { padding: 0.75rem 1.25rem; }
+      .nav-links { gap: 1.2rem; }
+      .hero-inner { flex-direction: column-reverse; gap: 2rem; text-align: center; }
+      .hero-cta { justify-content: center; }
+      .hero-photo { width: 160px; height: 160px; }
+      .about-inner { grid-template-columns: 1fr; gap: 2rem; }
+      .stat-div { display: none; }
+      .section { padding: 3.5rem 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a class="nav-brand" href="index.html">Lyoid<span>.</span>net</a>
+    <ul class="nav-links">
+      <li><a href="resume.html">Resume</a></li>
+      <li><a href="energy.html">Energy</a></li>
+      <li><a href="tech.html">Tech</a></li>
+      <li><a href="outdoors.html">Outdoors</a></li>
+      <li><a href="creative.html">Creative</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-inner">
+      <div class="hero-text">
+        <div class="hero-eyebrow">Houston, TX &nbsp;·&nbsp; Energy · Code · Wild Places · Stories</div>
+        <h1 class="hero-name">Lyoid<br><span>Fussell</span></h1>
+        <p class="hero-tagline">
+          <strong>Behind-the-meter power executive</strong> with 25+ years building things — turbine fleets,
+          game servers, custom fishing rods, and punchlines. Not many people close $900M in
+          power contracts and also know how to tan a hide. Welcome to the full picture.
+        </p>
+        <div class="hero-cta">
+          <a href="resume.html" class="btn btn-primary">View Resume</a>
+          <a href="#about" class="btn btn-outline">Learn More</a>
+        </div>
+      </div>
+      <div class="hero-photo-wrap">
+        <img src="../Lyoid.png" alt="Lyoid Fussell" class="hero-photo" />
+        <div class="hero-photo-ring"></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="accent-bar"></div>
+
+  <!-- STAT STRIP -->
+  <div class="intro-strip">
+    <div class="intro-stats">
+      <div class="stat">
+        <div class="stat-num">25+</div>
+        <div class="stat-label">Years in Energy</div>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat">
+        <div class="stat-num">$2B+</div>
+        <div class="stat-label">Career Revenue</div>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat">
+        <div class="stat-num">1.5 GW</div>
+        <div class="stat-label">Active Power Projects</div>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat">
+        <div class="stat-num">335+ MW</div>
+        <div class="stat-label">Generation Deployed</div>
+      </div>
+      <div class="stat-div"></div>
+      <div class="stat">
+        <div class="stat-num">∞</div>
+        <div class="stat-label">Things Built</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- WHAT I DO -->
+  <section class="section" id="about">
+    <div class="section-inner">
+      <div class="section-label">What I Do</div>
+      <h2 class="section-title">One person. Many chapters.</h2>
+      <p class="section-sub">Each card is a different corner of who I am. The common thread: I don't just learn things — I build things with them.</p>
+
+      <div class="card-grid">
+
+        <a href="energy.html" class="card card-energy">
+          <div class="card-icon">⚡</div>
+          <div class="card-title">Energy & Power</div>
+          <div class="card-desc">Behind-the-meter power executive. 25+ years from wellhead to turbine pad. Currently developing BTM infrastructure for 1.5 GW of active data center projects. $2B+ in career revenue. Published nationally on turbine scarcity and data center power.</div>
+          <div class="card-link">See my energy work</div>
+        </a>
+
+        <a href="resume.html" class="card card-energy">
+          <div class="card-icon">📄</div>
+          <div class="card-title">Resume</div>
+          <div class="card-desc">A concise view of my professional career — power infrastructure, gas turbine strategy, completions engineering, executive sales, and P&L leadership across 20+ years and $2B+ in results.</div>
+          <div class="card-link">View resume</div>
+        </a>
+
+        <a href="tech.html" class="card card-tech">
+          <div class="card-icon">🖥️</div>
+          <div class="card-title">Developer & Builder</div>
+          <div class="card-desc">FiveM & RedM server architect. Unreal Engine developer. HTML5 game creator. Built production business tools — proposal generators, reporting software, and field calculators still in active use today.</div>
+          <div class="card-link">See my tech work</div>
+        </a>
+
+        <a href="outdoors.html" class="card card-outdoors">
+          <div class="card-icon">🎣</div>
+          <div class="card-title">Outdoors & Craft</div>
+          <div class="card-desc">Custom rod builder with YouTube tutorials. Fly tier. Avid hunter who knows how to tan a hide. Grew up in the Florida Everglades — the outdoors isn't a hobby, it's a foundation.</div>
+          <div class="card-link">See my outdoor life</div>
+        </a>
+
+        <a href="creative.html" class="card card-creative">
+          <div class="card-icon">🎭</div>
+          <div class="card-title">Creative & Performance</div>
+          <div class="card-desc">Standup and improv comedian — years on stage in Tulsa, Oklahoma. AI music creator with a Spotify channel. Performer at heart, which explains the boardroom presence.</div>
+          <div class="card-link">See my creative work</div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT STRIP -->
+  <div class="about-strip">
+    <div class="about-inner">
+      <div class="about-body">
+        <div class="section-label" style="margin-bottom:0.6rem;">The Short Version</div>
+        <h2 class="section-title" style="margin-bottom:1rem; font-size:1.7rem;">Built differently.<br>Hired for it.</h2>
+        <p>
+          <strong>Most energy executives come from finance or engineering.</strong> I came from the field — a U.S. Army veteran who worked his way from fracturing operations supervisor to closing $900M in behind-the-meter power contracts for data center developers.
+        </p>
+        <p>
+          Along the way I built FiveM game servers for fun, ran a custom fishing rod business, did standup comedy, published in national energy journals, and presented energy policy to the Oklahoma State Legislature.
+        </p>
+        <p>
+          The same thing drives all of it: <strong>I like to understand how things work and then build something better.</strong>
+        </p>
+      </div>
+      <div class="about-facts">
+        <div class="fact">
+          <div class="fact-icon">🎖️</div>
+          <div class="fact-text">
+            <strong>U.S. Army Veteran</strong>
+            63 Echo — M1A1 Hull Systems Mechanic, 1993–1997
+          </div>
+        </div>
+        <div class="fact">
+          <div class="fact-icon">🎓</div>
+          <div class="fact-text">
+            <strong>B.S. Industrial Engineering</strong>
+            Kansas State University · SPE Member since 2002
+          </div>
+        </div>
+        <div class="fact">
+          <div class="fact-icon">🌿</div>
+          <div class="fact-text">
+            <strong>Grew Up in the Everglades</strong>
+            Florida raised — swamp water in the blood
+          </div>
+        </div>
+        <div class="fact">
+          <div class="fact-icon">🎤</div>
+          <div class="fact-text">
+            <strong>Standup & Improv Comedian</strong>
+            Years on stage in Tulsa — the boardroom is just a tighter room
+          </div>
+        </div>
+        <div class="fact">
+          <div class="fact-icon">🎵</div>
+          <div class="fact-text">
+            <strong>AI Music Creator</strong>
+            Producing and releasing original AI-generated music on Spotify
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTACT / FOOTER -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-links">
+        <a href="resume.html">Resume</a>
+        <a href="energy.html">Energy</a>
+        <a href="tech.html">Tech</a>
+        <a href="outdoors.html">Outdoors</a>
+        <a href="creative.html">Creative</a>
+        <a href="mailto:Lyoid.Fussell@gmail.com">Lyoid.Fussell@gmail.com</a>
+        <a href="tel:+19189329157">918-932-9157</a>
+        <a href="https://linkedin.com/in/lyoid" target="_blank">LinkedIn</a>
+      </div>
+      <div class="footer-copy">&copy; 2026 Lyoid Fussell &nbsp;·&nbsp; lyoid.net</div>
+    </div>
+  </footer>
+
+</body>
+</html>

@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Developer & Builder — Lyoid Fussell</title>
+  <meta name="description" content="KSUIE_Gaming — FiveM/RedM server architect, Unreal Engine game developer, HTML5 game creator, and business software builder." />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0c2340; --navy-mid: #163356; --navy-light: #1e3f6e;
+      --blue: #1d4ed8; --blue-mid: #3b82f6; --blue-bright: #60a5fa;
+      --purple: #7c3aed; --purple-bright: #a78bfa;
+      --green: #059669; --green-bright: #34d399;
+      --text: #f0f4ff; --text-muted: #94a3b8;
+      --card-bg: rgba(255,255,255,0.04); --card-border: rgba(255,255,255,0.09);
+      --card-hover: rgba(255,255,255,0.07);
+    }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--navy); color: var(--text); line-height: 1.6; }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: rgba(12,35,64,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0.75rem 2.5rem; display: flex; align-items: center; justify-content: space-between; }
+    .nav-brand { font-weight: 700; font-size: 1.05rem; color: var(--text); text-decoration: none; }
+    .nav-brand span { color: var(--blue-bright); }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover, .nav-links a.active { color: var(--text); }
+
+    /* HERO */
+    .hero { padding: 8rem 2.5rem 4rem; background: linear-gradient(160deg, #0c2340 0%, #130a2e 50%, #0c2340 100%); position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 70% 60% at 80% 30%, rgba(124,58,237,0.12) 0%, transparent 60%), radial-gradient(ellipse 50% 40% at 10% 70%, rgba(29,78,216,0.1) 0%, transparent 50%); pointer-events: none; }
+    .hero-inner { max-width: 1100px; margin: 0 auto; position: relative; z-index: 1; }
+    .hero-eyebrow { font-size: 0.72rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--purple-bright); margin-bottom: 1rem; }
+    .hero-title { font-size: clamp(2.4rem, 5vw, 3.8rem); font-weight: 800; letter-spacing: -1px; line-height: 1.08; margin-bottom: 1.2rem; }
+    .hero-title span { background: linear-gradient(90deg, var(--purple-bright), var(--blue-bright)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .hero-sub { font-size: 1.05rem; color: var(--text-muted); max-width: 680px; line-height: 1.7; margin-bottom: 1.8rem; }
+    .hero-sub strong { color: var(--text); }
+    .hero-badges { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+    .badge { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.35rem 0.85rem; border-radius: 999px; font-size: 0.75rem; font-weight: 600; border: 1px solid; }
+    .badge-lua { background: rgba(0,136,204,0.12); border-color: rgba(0,136,204,0.3); color: #38bdf8; }
+    .badge-js { background: rgba(234,179,8,0.1); border-color: rgba(234,179,8,0.25); color: #fbbf24; }
+    .badge-ue { background: rgba(124,58,237,0.12); border-color: rgba(124,58,237,0.3); color: var(--purple-bright); }
+    .badge-html { background: rgba(234,88,12,0.1); border-color: rgba(234,88,12,0.25); color: #fb923c; }
+    .badge-fivem { background: rgba(29,78,216,0.12); border-color: rgba(29,78,216,0.3); color: var(--blue-bright); }
+
+    /* ACCENT */
+    .accent-bar { height: 4px; background: linear-gradient(90deg, var(--purple) 0%, var(--blue-mid) 50%, #38bdf8 100%); }
+
+    /* SECTIONS */
+    .section { padding: 4.5rem 2.5rem; }
+    .section-inner { max-width: 1100px; margin: 0 auto; }
+    .section-alt { background: rgba(255,255,255,0.02); border-top: 1px solid var(--card-border); border-bottom: 1px solid var(--card-border); }
+    .section-label { font-size: 0.65rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: var(--purple-bright); margin-bottom: 0.5rem; }
+    .section-title { font-size: clamp(1.5rem, 2.8vw, 2rem); font-weight: 800; letter-spacing: -0.4px; margin-bottom: 0.7rem; }
+    .section-sub { font-size: 0.95rem; color: var(--text-muted); max-width: 640px; margin-bottom: 2.5rem; line-height: 1.7; }
+
+    /* TIMELINE — server history */
+    .timeline { position: relative; padding-left: 2rem; }
+    .timeline::before { content: ''; position: absolute; left: 0; top: 6px; bottom: 6px; width: 2px; background: linear-gradient(180deg, var(--purple) 0%, var(--blue-mid) 100%); border-radius: 2px; }
+    .tl-item { position: relative; margin-bottom: 2.2rem; }
+    .tl-item::before { content: ''; position: absolute; left: -2.4rem; top: 6px; width: 10px; height: 10px; border-radius: 50%; background: var(--purple-bright); border: 2px solid var(--navy); box-shadow: 0 0 0 3px rgba(167,139,250,0.2); }
+    .tl-item:last-child { margin-bottom: 0; }
+    .tl-header { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.5rem 1rem; margin-bottom: 0.4rem; }
+    .tl-org { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+    .tl-role { font-size: 0.82rem; color: var(--purple-bright); font-weight: 600; }
+    .tl-date { font-size: 0.75rem; color: var(--text-muted); margin-left: auto; }
+    .tl-body { font-size: 0.88rem; color: var(--text-muted); line-height: 1.65; }
+    .tl-body ul { list-style: none; padding: 0; margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.25rem; }
+    .tl-body li::before { content: '›'; color: var(--purple-bright); margin-right: 0.5rem; }
+    .tl-highlight { display: inline-block; background: rgba(167,139,250,0.12); border: 1px solid rgba(167,139,250,0.25); color: var(--purple-bright); font-size: 0.72rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 4px; margin-top: 0.5rem; }
+
+    /* CARD GRID */
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.1rem; }
+    .card-grid-2 { grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); }
+    .card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 12px; padding: 1.4rem; text-decoration: none; color: var(--text); transition: all 0.22s; display: flex; flex-direction: column; gap: 0.65rem; position: relative; overflow: hidden; }
+    .card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; opacity: 0; transition: opacity 0.22s; background: var(--card-accent, linear-gradient(90deg, var(--purple), var(--blue-mid))); }
+    .card:hover { background: var(--card-hover); border-color: rgba(255,255,255,0.15); transform: translateY(-3px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+    .card:hover::before { opacity: 1; }
+    .card-icon { font-size: 1.6rem; line-height: 1; }
+    .card-title { font-size: 0.98rem; font-weight: 700; }
+    .card-desc { font-size: 0.83rem; color: var(--text-muted); line-height: 1.6; flex: 1; }
+    .card-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.2rem; }
+    .card-tag { font-size: 0.68rem; font-weight: 600; padding: 0.1rem 0.45rem; border-radius: 3px; background: rgba(255,255,255,0.07); color: var(--text-muted); border: 1px solid rgba(255,255,255,0.1); }
+    .card-link { font-size: 0.75rem; font-weight: 600; color: var(--blue-bright); display: flex; align-items: center; gap: 0.3rem; margin-top: 0.2rem; text-decoration: none; }
+    .card-link::after { content: '→'; }
+    .card-link:hover { color: #93c5fd; }
+
+    /* STAT ROW */
+    .stat-row { display: flex; flex-wrap: wrap; gap: 1rem; margin-bottom: 2.5rem; }
+    .stat-box { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 1rem 1.4rem; text-align: center; flex: 1; min-width: 120px; }
+    .stat-num { font-size: 1.6rem; font-weight: 800; color: var(--purple-bright); letter-spacing: -0.5px; }
+    .stat-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 0.1rem; }
+
+    /* TOOLS GRID */
+    .tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.1rem; }
+    .tool-card { background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 10px; padding: 1.2rem 1.4rem; display: flex; gap: 1rem; align-items: flex-start; transition: all 0.2s; }
+    .tool-card:hover { background: var(--card-hover); border-color: rgba(255,255,255,0.14); }
+    .tool-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 2px; }
+    .tool-body { flex: 1; }
+    .tool-name { font-size: 0.95rem; font-weight: 700; margin-bottom: 0.3rem; }
+    .tool-desc { font-size: 0.83rem; color: var(--text-muted); line-height: 1.55; }
+    .tool-stack { font-size: 0.72rem; color: var(--blue-bright); margin-top: 0.4rem; font-weight: 600; }
+
+    /* GITHUB CTA */
+    .github-cta { background: linear-gradient(135deg, rgba(124,58,237,0.12) 0%, rgba(29,78,216,0.12) 100%); border: 1px solid rgba(124,58,237,0.25); border-radius: 14px; padding: 2rem 2.4rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem; margin-top: 2.5rem; }
+    .github-cta-text h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 0.35rem; }
+    .github-cta-text p { font-size: 0.88rem; color: var(--text-muted); }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.65rem 1.4rem; border-radius: 6px; font-size: 0.88rem; font-weight: 600; text-decoration: none; transition: all 0.2s; }
+    .btn-purple { background: var(--purple); color: #fff; border: 1px solid transparent; }
+    .btn-purple:hover { background: #6d28d9; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(124,58,237,0.4); }
+    .btn-outline { background: transparent; color: var(--text); border: 1px solid rgba(255,255,255,0.18); }
+    .btn-outline:hover { background: rgba(255,255,255,0.06); }
+
+    /* FOOTER */
+    footer { background: rgba(0,0,0,0.25); border-top: 1px solid var(--card-border); padding: 2rem 2.5rem; text-align: center; }
+    .footer-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.5rem 2rem; margin-bottom: 0.8rem; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.84rem; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--text); }
+    .footer-copy { font-size: 0.78rem; color: rgba(148,163,184,0.5); }
+
+    @media (max-width: 768px) {
+      nav { padding: 0.75rem 1.25rem; }
+      .nav-links { gap: 1.2rem; }
+      .hero, .section { padding-left: 1.25rem; padding-right: 1.25rem; }
+      .tl-date { margin-left: 0; }
+      .github-cta { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a class="nav-brand" href="index.html">Lyoid<span>.</span>net</a>
+    <ul class="nav-links">
+      <li><a href="resume.html">Resume</a></li>
+      <li><a href="energy.html">Energy</a></li>
+      <li><a href="tech.html" class="active">Tech</a></li>
+      <li><a href="outdoors.html">Outdoors</a></li>
+      <li><a href="creative.html">Creative</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-inner" style="display:flex; align-items:center; gap:3.5rem; flex-wrap:wrap;">
+      <div style="flex:1; min-width:280px;">
+        <div class="hero-eyebrow">KSUIE_Gaming &nbsp;·&nbsp; github.com/ChimeraDrops</div>
+        <h1 class="hero-title">Developer<br><span>&amp; Builder</span></h1>
+        <p class="hero-sub">
+          <strong>915 GitHub contributions in the last year.</strong> FiveM and RedM server architect.
+          Unreal Engine game developer. HTML5 minigame creator. Business software engineer.
+          The same instinct that closes $900M power contracts also ships Lua scripts at midnight.
+        </p>
+        <div class="hero-badges">
+          <span class="badge badge-lua">Lua</span>
+          <span class="badge badge-js">JavaScript</span>
+          <span class="badge badge-ue">Unreal Engine 5</span>
+          <span class="badge badge-html">HTML5 / CSS</span>
+          <span class="badge badge-fivem">FiveM / RedM</span>
+        </div>
+      </div>
+      <div style="flex-shrink:0; text-align:center;">
+        <img src="img/KSUIE_Gaming logo.jpg" alt="KSUIE_Gaming" style="width:180px; height:180px; object-fit:cover; border-radius:50%; border:3px solid rgba(167,139,250,0.35); box-shadow:0 0 40px rgba(124,58,237,0.3), 0 0 0 1px rgba(167,139,250,0.15);" />
+        <div style="margin-top:0.6rem; font-size:0.72rem; font-weight:700; letter-spacing:2px; color:var(--purple-bright); text-transform:uppercase;">KSUIE_Gaming</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="accent-bar"></div>
+
+  <!-- SERVER DEVELOPMENT HISTORY -->
+  <section class="section">
+    <div class="section-inner">
+      <div class="section-label">FiveM &amp; RedM</div>
+      <h2 class="section-title">Server Development Career</h2>
+      <p class="section-sub">A multi-year arc of building, leading, and launching full roleplay server communities — from developer contributor to lead architect running servers with 120-player queues.</p>
+
+      <div class="stat-row">
+        <div class="stat-box"><div class="stat-num">120+</div><div class="stat-label">Slot Queue Peak</div></div>
+        <div class="stat-box"><div class="stat-num">3+</div><div class="stat-label">Servers Built</div></div>
+        <div class="stat-box"><div class="stat-num">Lua</div><div class="stat-label">Primary Language</div></div>
+        <div class="stat-box"><div class="stat-num">QBus</div><div class="stat-label">FiveM Framework</div></div>
+        <div class="stat-box"><div class="stat-num">RedM</div><div class="stat-label">RDR2 Framework</div></div>
+      </div>
+
+      <div class="timeline">
+
+        <div class="tl-item">
+          <div class="tl-header">
+            <span class="tl-org">Simply Roleplay → JustRP</span>
+            <span class="tl-role">FiveM Developer</span>
+            <span class="tl-date">Early career</span>
+          </div>
+          <div class="tl-body">
+            Started as a developer on Simply Roleplay, one of the earlier FiveM communities. The server was eventually sold and rebranded as JustRP. Stayed on through the transition before moving on to lead work.
+          </div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-header">
+            <span class="tl-org">Insurgency Roleplay</span>
+            <span class="tl-role">Lead Developer</span>
+          </div>
+          <div class="tl-body">
+            Built the entire Insurgency RP FiveM server from the ground up as lead developer. Designed and implemented core gameplay systems, scripts, and server infrastructure on the QBus framework.
+            <ul>
+              <li>Architected the full server stack — jobs, economy, housing, vehicle systems, custom scripts</li>
+              <li>Server grew to a sustained 120-player queue lasting several months at peak</li>
+              <li>Led a development team and coordinated releases with server ownership</li>
+              <li>Server eventually closed following ownership changes — built it, ran it, watched it fly</li>
+            </ul>
+            <span class="tl-highlight">🏆 Peak: 120-slot queue — months of sustained population</span>
+          </div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-header">
+            <span class="tl-org">Grit &amp; Glory</span>
+            <span class="tl-role">Founder / Lead Developer → Inactive Advisor</span>
+            <span class="tl-date">Active → Ongoing</span>
+          </div>
+          <div class="tl-body">
+            After Insurgency RP, created Grit &amp; Glory — a RedM (Red Dead Redemption 2) roleplay server. Built the server, established the community, and handed ongoing operations to trusted co-developer CrazeDogg. Still an inactive advisor on the project.
+            <ul>
+              <li>Built on RedM framework with custom Lua scripting throughout</li>
+              <li>Repo: <a href="https://github.com/ChimeraDrops/GritAndGlory" target="_blank" style="color:var(--blue-bright)">github.com/ChimeraDrops/GritAndGlory</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="tl-item">
+          <div class="tl-header">
+            <span class="tl-org">Cypress RP</span>
+            <span class="tl-role">Owner / Lead Developer</span>
+            <span class="tl-date">In Development</span>
+          </div>
+          <div class="tl-body">
+            Currently owned and in development. Cypress RP is being built as a GTA6 roleplay server — positioned for launch when GTA6 releases on PC. The website and foundational server structure are already underway.
+            <ul>
+              <li>Website: <a href="https://github.com/ChimeraDrops/CypressRP_Website" target="_blank" style="color:var(--blue-bright)">github.com/ChimeraDrops/CypressRP_Website</a> — JavaScript, GPL v3.0</li>
+              <li>Includes 8 original HTML5 minigames built for the server (see below)</li>
+            </ul>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- HTML5 MINIGAMES -->
+  <section class="section section-alt">
+    <div class="section-inner">
+      <div class="section-label">HTML5 / JavaScript</div>
+      <h2 class="section-title">Minigames Built for Cypress RP</h2>
+      <p class="section-sub">Eight original interactive minigames built in HTML, CSS, and JavaScript for integration into the Cypress RP FiveM server experience. Each is a standalone playable game.</p>
+
+      <div class="card-grid">
+
+        <div class="card">
+          <div class="card-icon">🐄</div>
+          <div class="card-title">Cow Milking</div>
+          <div class="card-desc">Rhythm and timing-based minigame. Hit the prompts at the right moment to milk efficiently — miss and you start over.</div>
+          <div class="card-tags"><span class="card-tag">HTML5</span><span class="card-tag">JavaScript</span><span class="card-tag">Timing Game</span></div>
+          <a href="https://github.com/ChimeraDrops/CypressRP_Website/tree/main/minigames/cowmilking" target="_blank" class="card-link">View source</a>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🚁</div>
+          <div class="card-title">Drone Fetch / Drone Wall</div>
+          <div class="card-desc">Dual-mode drone operation game. Navigate through obstacles or retrieve targets — tests precision control under pressure.</div>
+          <div class="card-tags"><span class="card-tag">HTML5</span><span class="card-tag">JavaScript</span><span class="card-tag">Navigation</span></div>
+          <a href="https://github.com/ChimeraDrops/CypressRP_Website/tree/main/minigames/drone_fetch" target="_blank" class="card-link">View source</a>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🪰</div>
+          <div class="card-title">Fly Clicker</div>
+          <div class="card-desc">Reaction-speed clicker game. Track and eliminate targets before they escape — speed and accuracy both matter.</div>
+          <div class="card-tags"><span class="card-tag">HTML5</span><span class="card-tag">JavaScript</span><span class="card-tag">Reaction</span></div>
+          <a href="https://github.com/ChimeraDrops/CypressRP_Website/tree/main/minigames/fly_clicker" target="_blank" class="card-link">View source</a>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">📡</div>
+          <div class="card-title">Morse Code Decode</div>
+          <div class="card-desc">Decode incoming Morse code sequences to progress. Includes a Play Again flow and progressive difficulty.</div>
+          <div class="card-tags"><span class="card-tag">HTML5</span><span class="card-tag">JavaScript</span><span class="card-tag">Puzzle</span></div>
+          <a href="https://github.com/ChimeraDrops/CypressRP_Website/tree/main/minigames/morsecode" target="_blank" class="card-link">View source</a>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🏥</div>
+          <div class="card-title">Operation</div>
+          <div class="card-desc">Precision steady-hand game inspired by the classic board game. Don't touch the sides — custom image assets throughout.</div>
+          <div class="card-tags"><span class="card-tag">HTML5</span><span class="card-tag">JavaScript</span><span class="card-tag">Precision</span></div>
+          <a href="https://github.com/ChimeraDrops/CypressRP_Website/tree/main/minigames/operation" target="_blank" class="card-link">View source</a>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🔊</div>
+          <div class="card-title">Signal Matcher</div>
+          <div class="card-desc">Pattern recognition game — match incoming signal sequences within the time limit. Built with debug tooling included.</div>
+          <div class="card-tags"><span class="card-tag">HTML5</span><span class="card-tag">JavaScript</span><span class="card-tag">Pattern Match</span></div>
+          <a href="https://github.com/ChimeraDrops/CypressRP_Website/tree/main/minigames/signalmatcher" target="_blank" class="card-link">View source</a>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">✂️</div>
+          <div class="card-title">Wire Cutter</div>
+          <div class="card-desc">Defusal-style minigame. Identify and cut the correct wire sequence before time runs out — wrong cut and it's over.</div>
+          <div class="card-tags"><span class="card-tag">HTML5</span><span class="card-tag">JavaScript</span><span class="card-tag">Puzzle</span></div>
+          <a href="https://github.com/ChimeraDrops/CypressRP_Website/tree/main/minigames/wire_cutter" target="_blank" class="card-link">View source</a>
+        </div>
+
+        <div class="card">
+          <div class="card-icon">🧮</div>
+          <div class="card-title">Wired Equations</div>
+          <div class="card-desc">Solve math equations under pressure to progress through a wiring puzzle. Combines mental math with timed execution.</div>
+          <div class="card-tags"><span class="card-tag">HTML5</span><span class="card-tag">JavaScript</span><span class="card-tag">Puzzle</span></div>
+          <a href="https://github.com/ChimeraDrops/CypressRP_Website/tree/main/minigames/wired_equations" target="_blank" class="card-link">View source</a>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- UNREAL ENGINE GAMES -->
+  <section class="section">
+    <div class="section-inner">
+      <div class="section-label">Unreal Engine 5</div>
+      <h2 class="section-title">Game Jam Releases</h2>
+      <p class="section-sub">Two complete games submitted to competitive game jams — both built in Unreal Engine 5, both released as free downloads on itch.io under the KSUIE_Gaming handle.</p>
+
+      <div class="card-grid card-grid-2">
+
+        <a href="https://ksuie-gaming.itch.io/afflyction-fly-fishing" target="_blank" class="card" style="--card-accent: linear-gradient(90deg, #059669, #34d399);">
+          <div class="card-icon">🎣</div>
+          <div class="card-title">Afflyction — Fly Fishing</div>
+          <div class="card-desc">
+            First Unreal Engine 5 game ever built. A standalone fly fishing simulator submitted to the Ryan Laley Games Game Jam 2024. Pulls directly from real fly fishing mechanics — built by someone who actually ties flies.
+            <br/><br/>
+            <em style="font-size:0.8rem; color: #6ee7b7;">Ryan Laley Games Game Jam · August 2024 · Free download</em>
+          </div>
+          <div class="card-tags"><span class="card-tag">Unreal Engine 5</span><span class="card-tag">Game Jam</span><span class="card-tag">Simulation</span><span class="card-tag">Windows</span></div>
+          <div class="card-link">Play on itch.io</div>
+        </a>
+
+        <a href="https://ksuie-gaming.itch.io/tetroidvania" target="_blank" class="card" style="--card-accent: linear-gradient(90deg, #7c3aed, #a78bfa);">
+          <div class="card-icon">🎮</div>
+          <div class="card-title">TETROIDVANIA</div>
+          <div class="card-desc">
+            Second Unreal Engine 5 game — a Metroidvania built with co-developer Malthador for Metroidvania Month 25. A genre mashup that blends exploration and progression mechanics with puzzle elements.
+            <br/><br/>
+            <em style="font-size:0.8rem; color: var(--purple-bright);">Metroidvania Month 25 Game Jam · September 2024 · Free download</em>
+          </div>
+          <div class="card-tags"><span class="card-tag">Unreal Engine 5</span><span class="card-tag">Game Jam</span><span class="card-tag">Metroidvania</span><span class="card-tag">Windows</span></div>
+          <div class="card-link">Play on itch.io</div>
+        </a>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- BUSINESS TOOLS -->
+  <section class="section section-alt">
+    <div class="section-inner">
+      <div class="section-label">Production Software</div>
+      <h2 class="section-title">Business Tools Built &amp; Deployed</h2>
+      <p class="section-sub">Real-world applications built to solve real professional problems — most still in active use today. This is the part of the developer story that matters to employers.</p>
+
+      <div class="tools-grid">
+
+        <div class="tool-card">
+          <div class="tool-icon">⚡</div>
+          <div class="tool-body">
+            <div class="tool-name">Fussell Gas Turbine Calculator</div>
+            <div class="tool-desc">Field-use generator sizing and fuel consumption calculator for gas turbine power applications. Handles BTU conversions, generator output, efficiency calculations, and fuel burn rates for project estimating.</div>
+            <div class="tool-stack">HTML · CSS · JavaScript</div>
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">🔋</div>
+          <div class="tool-body">
+            <div class="tool-name">GenSystems Power Calculator</div>
+            <div class="tool-desc">Power generation configuration tool built during the GenSystems Power Solutions tenure. Used internally to evaluate and size power packages for industrial and data center projects.</div>
+            <div class="tool-stack">HTML · CSS · JavaScript</div>
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">📋</div>
+          <div class="tool-body">
+            <div class="tool-name">Custom Proposal Generator</div>
+            <div class="tool-desc">Automated proposal generation software built to accelerate sales cycles. Takes project parameters and outputs formatted client-ready proposals — cutting hours of manual document work to minutes.</div>
+            <div class="tool-stack">HTML · JavaScript · CSS</div>
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">📊</div>
+          <div class="tool-body">
+            <div class="tool-name">Post-Job Reporting Software</div>
+            <div class="tool-desc">Field operations reporting tool built to standardize post-job documentation. Captures job data, generates structured reports, and creates an auditable record for operations review and client billing.</div>
+            <div class="tool-stack">HTML · JavaScript · CSS</div>
+          </div>
+        </div>
+
+        <div class="tool-card">
+          <div class="tool-icon">🎓</div>
+          <div class="tool-body">
+            <div class="tool-name">RedM Tutorial Series</div>
+            <div class="tool-desc">Written tutorial content and companion code repositories covering RedM server development — including the Butcher Shop Tutorial, a full walkthrough of building a complex Lua-based job system from scratch.</div>
+            <div class="tool-stack">Lua · RedM Framework</div>
+          </div>
+        </div>
+
+        <a href="https://youtube.com/playlist?list=PLsUMWvvgNJvADbmI_lP_T5g01TOyYUPZt" target="_blank" class="tool-card" style="text-decoration:none; color:inherit;">
+          <div class="tool-icon">▶️</div>
+          <div class="tool-body">
+            <div class="tool-name" style="display:flex; align-items:center; gap:0.6rem;">
+              FiveM Development Tutorial Series
+              <span style="font-size:0.68rem; font-weight:700; background:rgba(255,0,0,0.15); border:1px solid rgba(255,0,0,0.3); color:#f87171; padding:0.1rem 0.45rem; border-radius:3px;">YouTube</span>
+            </div>
+            <div class="tool-desc">A full video tutorial series on FiveM server development — covering Lua scripting, QBus framework, job system creation, and server architecture from the ground up. Built for developers who want to go from zero to a running RP server.</div>
+            <div class="tool-stack" style="color:#f87171;">YouTube Playlist · Lua · FiveM · QBus</div>
+          </div>
+        </a>
+
+        <a href="https://youtube.com/playlist?list=PLsUMWvvgNJvBm64q5vpEf3v8lZMtNadJK" target="_blank" class="tool-card" style="text-decoration:none; color:inherit;">
+          <div class="tool-icon">🎮</div>
+          <div class="tool-body">
+            <div class="tool-name" style="display:flex; align-items:center; gap:0.6rem;">
+              Learning Unreal Engine — Video Series
+              <span style="font-size:0.68rem; font-weight:700; background:rgba(255,0,0,0.15); border:1px solid rgba(255,0,0,0.3); color:#f87171; padding:0.1rem 0.45rem; border-radius:3px;">YouTube</span>
+            </div>
+            <div class="tool-desc">A documented journey learning Unreal Engine 5 from scratch — covering blueprints, game mechanics, level design, and the full process of building and submitting games to game jams. Honest, practical, and built alongside real project work.</div>
+            <div class="tool-stack" style="color:#f87171;">YouTube Playlist · Unreal Engine 5 · Game Dev</div>
+          </div>
+        </a>
+
+        <div class="tool-card">
+          <div class="tool-icon">📦</div>
+          <div class="tool-body">
+            <div class="tool-name">KSUIE_Gaming Script Releases</div>
+            <div class="tool-desc">Public library of released FiveM/RedM Lua scripts — 4 GitHub stars, 5 forks, 3 forks on KSUIE_Scripts. Community-adopted scripts covering server systems, job mechanics, and quality-of-life improvements.</div>
+            <div class="tool-stack">Lua · FiveM · QBus</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="github-cta">
+        <div class="github-cta-text">
+          <h3>915 contributions in the last year</h3>
+          <p>All public repos, scripts, tutorial files, and game source code available on GitHub.</p>
+        </div>
+        <div style="display:flex; gap:0.8rem; flex-wrap:wrap;">
+          <a href="https://github.com/ChimeraDrops" target="_blank" class="btn btn-purple">GitHub Profile</a>
+          <a href="https://ksuie-gaming.itch.io" target="_blank" class="btn btn-outline">itch.io Games</a>
+          <a href="https://youtube.com/playlist?list=PLsUMWvvgNJvADbmI_lP_T5g01TOyYUPZt" target="_blank" class="btn btn-outline" style="color:#f87171; border-color:rgba(248,113,113,0.3);">▶ FiveM Tutorials</a>
+          <a href="https://youtube.com/playlist?list=PLsUMWvvgNJvBm64q5vpEf3v8lZMtNadJK" target="_blank" class="btn btn-outline" style="color:#f87171; border-color:rgba(248,113,113,0.3);">▶ Unreal Engine Series</a>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <footer>
+    <div class="footer-links">
+      <a href="index.html">Home</a>
+      <a href="resume.html">Resume</a>
+      <a href="energy.html">Energy</a>
+      <a href="outdoors.html">Outdoors</a>
+      <a href="creative.html">Creative</a>
+      <a href="mailto:Lyoid.Fussell@gmail.com">Lyoid.Fussell@gmail.com</a>
+      <a href="https://linkedin.com/in/lyoid" target="_blank">LinkedIn</a>
+      <a href="https://github.com/ChimeraDrops" target="_blank">GitHub</a>
+    </div>
+    <div class="footer-copy">&copy; 2026 Lyoid Fussell &nbsp;·&nbsp; lyoid.net</div>
+  </footer>
+
+</body>
+</html>

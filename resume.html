@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Resume — Lyoid Fussell</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --navy: #0c2340; --navy-mid: #163356; --blue: #1d4ed8;
+      --blue-light: #eff6ff; --blue-mid: #3b82f6;
+      --text: #1e293b; --muted: #64748b; --light: #f8fafc;
+      --border: #e2e8f0; --bg: #ffffff;
+      --power: #1d4ed8; --og: #059669;
+      --sz: 11.5px;
+    }
+    body { font-family: Georgia, 'Times New Roman', serif; background: #dde4ee; color: var(--text); font-size: var(--sz); line-height: 1.5; }
+    .page { max-width: 920px; margin: 2rem auto; background: var(--bg); box-shadow: 0 8px 40px rgba(0,0,0,0.18); }
+    .site-nav { background: #0c2340; padding: 0.65rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; max-width: 920px; margin: 1.5rem auto 0; }
+    .site-nav a { color: #94a3b8; text-decoration: none; font-family: 'Segoe UI', system-ui, sans-serif; font-size: 0.8rem; font-weight: 500; transition: color 0.2s; }
+    .site-nav a:hover { color: #f0f4ff; }
+    .site-nav .nav-brand { color: #60a5fa; font-weight: 700; font-size: 0.9rem; }
+    .site-nav .nav-links { display: flex; gap: 1.5rem; }
+    .site-nav .nav-links a.active { color: #f0f4ff; }
+    .site-nav .nav-actions { display: flex; gap: 1rem; }
+    .site-nav .btn-print { background: #1d4ed8; color: #fff; padding: 0.3rem 0.9rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .site-nav .btn-print:hover { background: #1e40af; color: #fff; }
+    .site-nav .btn-full { border: 1px solid rgba(255,255,255,0.18); color: #94a3b8; padding: 0.3rem 0.9rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; }
+    .site-nav .btn-full:hover { background: rgba(255,255,255,0.06); color: #f0f4ff; }
+    @media print { .site-nav { display: none; } .page { margin: 0; box-shadow: none; } }
+
+    /* HEADER */
+    header { background: linear-gradient(135deg, var(--navy) 0%, var(--navy-mid) 100%); color: #fff; padding: 1.7rem 2.6rem 1.4rem; position: relative; }
+    header::after { content: ''; display: block; position: absolute; bottom: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, var(--blue-mid) 0%, #38bdf8 100%); }
+    .h-inner { display: flex; align-items: center; justify-content: space-between; gap: 2rem; }
+    .h-text { flex: 1; }
+    .h-name { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 2rem; font-weight: 700; letter-spacing: -0.5px; line-height: 1.1; margin-bottom: 0.55rem; }
+    .h-contact { display: flex; flex-wrap: wrap; gap: 0.08rem 1.4rem; font-size: var(--sz); opacity: 0.9; margin-bottom: 0.38rem; }
+    .h-contact a { color: #fff; text-decoration: none; }
+    .h-contact a:hover { text-decoration: underline; }
+    .h-creds { font-size: var(--sz); opacity: 0.62; letter-spacing: 0.05px; }
+    .h-photo { flex-shrink: 0; width: 84px; height: 84px; border-radius: 50%; object-fit: cover; object-position: center top; border: 3px solid rgba(255,255,255,0.25); box-shadow: 0 4px 16px rgba(0,0,0,0.35); }
+
+    /* BODY */
+    .body { padding: 0 2.6rem 1.8rem; }
+    .section { margin-top: 1.1rem; }
+    .section-title { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 0.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2.2px; color: var(--blue); padding-left: 0.7rem; border-left: 3px solid var(--blue); line-height: 1.4; margin-bottom: 0.6rem; }
+
+    /* CAREER TABLE */
+    .legend { display: flex; gap: 1.1rem; margin-bottom: 0.48rem; font-size: var(--sz); color: var(--muted); align-items: center; }
+    .career-table { width: 100%; border-collapse: collapse; font-size: var(--sz); }
+    .career-table th { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; font-size: 0.58rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.1px; color: var(--muted); border-bottom: 2px solid var(--border); padding: 0.18rem 0.4rem 0.18rem 0; text-align: left; }
+    .career-table th:last-child { text-align: right; }
+    .career-table td { padding: 0.18rem 0.4rem 0.18rem 0; vertical-align: middle; border-bottom: 1px solid #f1f5f9; line-height: 1.38; font-size: var(--sz); }
+    .career-table td:first-child { font-weight: 600; white-space: nowrap; padding-right: 0.9rem; min-width: 160px; }
+    .career-table td:nth-child(2) { color: var(--muted); padding-right: 0.9rem; }
+    .career-table td:last-child { color: var(--muted); white-space: nowrap; text-align: right; }
+
+    /* TAGS */
+    .tag { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; display: inline-block; font-size: 0.58rem; font-weight: 700; letter-spacing: 0.7px; text-transform: uppercase; padding: 0.08rem 0.36rem; border-radius: 3px; white-space: nowrap; }
+    .tag-power { background: #dbeafe; color: var(--power); }
+    .tag-og    { background: #d1fae5; color: var(--og); }
+    .tag-mil   { background: #f1f5f9; color: #475569; }
+
+    /* COMPETENCIES */
+    .comp-grid { column-count: 2; column-gap: 2.5rem; }
+    .comp-item { font-size: var(--sz); display: flex; align-items: flex-start; gap: 0.45rem; line-height: 1.42; break-inside: avoid; -webkit-column-break-inside: avoid; margin-bottom: 0.22rem; }
+    .comp-item::before { content: '›'; color: var(--blue); font-weight: 700; flex-shrink: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    .comp-item.col-break { break-after: column; -webkit-column-break-after: column; }
+
+    /* HIGHLIGHTS */
+    .hl-list { list-style: none; padding: 0; }
+    .hl-list li { display: flex; align-items: flex-start; gap: 0.55rem; margin-bottom: 0.28rem; line-height: 1.42; font-size: var(--sz); }
+    .hl-tag { flex-shrink: 0; margin-top: 2px; }
+
+    /* PUBLICATIONS */
+    .pub-list { list-style: none; padding: 0; }
+    .pub-list li { display: flex; align-items: flex-start; gap: 0.48rem; margin-bottom: 0.2rem; font-size: var(--sz); line-height: 1.42; }
+    .pub-list li::before { content: '›'; color: var(--blue); font-weight: 700; flex-shrink: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+    .pub-cover { font-size: var(--sz); font-style: italic; color: var(--muted); }
+
+    @media print {
+      body { background: white; font-size: 13px; --sz: 13px; line-height: 1.52; }
+      .page { max-width: 100%; margin: 0; box-shadow: none; }
+      header { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 1.5rem 1.9rem 1.25rem; }
+      .tag { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .section { margin-top: 1.45rem; page-break-inside: avoid; }
+      .career-table { page-break-inside: auto; }
+      .career-table tr { page-break-inside: avoid; }
+      .comp-grid { gap: 0.32rem 2rem; }
+      .hl-list li { margin-bottom: 0.42rem; }
+      .pub-list li { margin-bottom: 0.35rem; }
+      .section-p2 { page-break-before: always; margin-top: 1.6rem; }
+      .body { padding: 0 1.9rem 1.8rem; }
+    }
+    @page { margin: 0.5in 0.6in; size: letter; }
+  </style>
+</head>
+<body>
+
+  <div class="site-nav">
+    <a href="index.html" class="nav-brand">Lyoid<span style="color:#60a5fa;">.</span>net</a>
+    <div class="nav-links">
+      <a href="energy.html">Energy</a>
+      <a href="tech.html">Tech</a>
+      <a href="outdoors.html">Outdoors</a>
+      <a href="creative.html">Creative</a>
+    </div>
+    <div class="nav-actions">
+      <a href="resume-full.html" class="btn-full">Full Resume</a>
+      <a href="#" onclick="window.print(); return false;" class="btn-print">⎙ Print / Save PDF</a>
+    </div>
+  </div>
+<div class="page">
+
+  <header>
+    <div class="h-inner">
+      <div class="h-text">
+        <div class="h-name">Lyoid Fussell</div>
+        <div class="h-contact">
+          <span>Houston, TX</span>
+          <a href="tel:+19189329157">918-932-9157</a>
+          <a href="mailto:Lyoid.Fussell@gmail.com">Lyoid.Fussell@gmail.com</a>
+          <a href="https://linkedin.com/in/lyoid" target="_blank">linkedin.com/in/lyoid</a>
+        </div>
+        <div class="h-creds">
+          B.S. Industrial Engineering, Kansas State University &nbsp;·&nbsp;
+          U.S. Army Veteran, 1993–1997 &nbsp;·&nbsp;
+          SPE Member since 2002
+        </div>
+      </div>
+      <img src="Lyoid.png" alt="Lyoid Fussell" class="h-photo" />
+    </div>
+  </header>
+
+  <div class="body">
+
+    <!-- CAREER HISTORY -->
+    <section class="section">
+      <div class="section-title">Career History</div>
+      <div class="legend">
+        <span><span class="tag tag-power">Power</span> &nbsp;Power Generation &amp; Infrastructure</span>
+        <span><span class="tag tag-og">O&amp;G</span> &nbsp;Oil &amp; Gas</span>
+        <span><span class="tag tag-mil">Military</span> &nbsp;U.S. Army</span>
+      </div>
+      <table class="career-table">
+        <thead>
+          <tr><th>Company</th><th>Title</th><th>Sector</th><th>Dates</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>TURBINE-X Energy Inc.</td><td>President</td><td><span class="tag tag-power">Power</span></td><td>Aug 2025 – Present</td></tr>
+          <tr><td>GenSystems Power Solutions</td><td>VP of BD &rarr; President</td><td><span class="tag tag-power">Power</span></td><td>Jan 2024 – Jul 2025</td></tr>
+          <tr><td>FW Consulting, Power Solutions</td><td>Co-Founder &amp; Policy Advisor</td><td><span class="tag tag-power">Power</span></td><td>Feb 2023 – Jul 2025</td></tr>
+          <tr><td>Jereh North American Group</td><td>VP, Business Development</td><td><span class="tag tag-power">Power</span></td><td>Jun 2019 – Sep 2024</td></tr>
+          <tr><td>Trisun Energy Services (Jereh)</td><td>President — Concurrent</td><td><span class="tag tag-og">O&amp;G</span></td><td>Jul 2021 – Jan 2023</td></tr>
+          <tr><td>ResMetrics</td><td>MidContinent Sales Manager</td><td><span class="tag tag-og">O&amp;G</span></td><td>Oct 2018 – Jun 2019</td></tr>
+          <tr><td>EcoStim Energy Solutions</td><td>VP, Sales &amp; Technology</td><td><span class="tag tag-og">O&amp;G</span></td><td>Jan 2018 – Oct 2018</td></tr>
+          <tr><td>Ely and Associates</td><td>Completions Engineering Consultant</td><td><span class="tag tag-og">O&amp;G</span></td><td>Oct 2016 – Jan 2018</td></tr>
+          <tr><td>PetroQuest Energy</td><td>Completions Engineer</td><td><span class="tag tag-og">O&amp;G</span></td><td>Nov 2012 – Sep 2016</td></tr>
+          <tr><td>Core Laboratories</td><td>Account Manager</td><td><span class="tag tag-og">O&amp;G</span></td><td>Feb 2009 – Nov 2012</td></tr>
+          <tr><td>Halliburton</td><td>Account Representative</td><td><span class="tag tag-og">O&amp;G</span></td><td>Jan 2004 – Feb 2009</td></tr>
+          <tr><td>Halliburton</td><td>Technical Service Representative</td><td><span class="tag tag-og">O&amp;G</span></td><td>Jan 2002 – Jan 2004</td></tr>
+          <tr><td>U.S. Army</td><td>63 Echo — M1A1 Hull Systems Mechanic</td><td><span class="tag tag-mil">Military</span></td><td>Sep 1993 – Sep 1997</td></tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- CORE COMPETENCIES -->
+    <section class="section">
+      <div class="section-title">Core Competencies</div>
+      <div class="comp-grid">
+        <div class="comp-item">Behind-the-Meter Power Infrastructure Strategy</div>
+        <div class="comp-item">Data Center Power Evaluation &amp; Deployment</div>
+        <div class="comp-item">P&amp;L Leadership &amp; Operations Turnaround</div>
+        <div class="comp-item">Gas Turbine Sourcing — New &amp; Secondary Markets</div>
+        <div class="comp-item">Energy Policy Advising &amp; Thought Leadership</div>
+        <div class="comp-item">Turbine Lead-Time &amp; Supply Constraint Navigation</div>
+        <div class="comp-item">Oil &amp; Gas Completions Engineering (20+ years)</div>
+        <div class="comp-item col-break">Executive Sales — $2B+ in career revenue generated</div>
+        <div class="comp-item">Modular Power Packaging &amp; Multi-Site Deployment</div>
+        <div class="comp-item">Power-as-a-Service (PaaS) Platform Development</div>
+        <div class="comp-item">Natural Gas Supply Chain &amp; Field Operations</div>
+        <div class="comp-item">Commercial Contract Origination &amp; Structuring</div>
+        <div class="comp-item">Power Project Lifecycle Management (Procurement to Commissioning)</div>
+        <div class="comp-item">Capital Deployment Strategy for Energy Infrastructure</div>
+      </div>
+    </section>
+
+    <!-- SELECTED HIGHLIGHTS -->
+    <section class="section section-p2">
+      <div class="section-title">Selected Career Highlights</div>
+      <ul class="hl-list">
+        <li><span class="hl-tag"><span class="tag tag-power">Power</span></span>TURBINE-X: Developing BTM power for a 500 MW data center (Spartanburg, SC) and a 1 GW facility (Cheyenne, WY)</li>
+        <li><span class="hl-tag"><span class="tag tag-power">Power</span></span>TURBINE-X: Originated $900M in contracted generation capacity (270 MW) with a negotiated 480 MW expansion option; closed first 75 MW contract within 60 days</li>
+        <li><span class="hl-tag"><span class="tag tag-power">Power</span></span>GenSystems Power Solutions: Scaled from $0 to $7M/month at 58% profit margin within 14 months; deployed 335+ MW including the 120 MW Tecate, Mexico peaker project; left the company fully contracted and operational</li>
+        <li><span class="hl-tag"><span class="tag tag-power">Power</span></span>Jereh: Closed $320M+ in turbine fleet sales — $200M+ in direct-drive frac fleets (5 units) and $120M+ in electric frac fleet sales (2 units)</li>
+        <li><span class="hl-tag"><span class="tag tag-power">Power</span></span>FW Consulting: Primary technical advisor on Oklahoma's Microgrid Tax Credit Act; presented twice at the State Capitol on energy infrastructure strategy</li>
+        <li><span class="hl-tag"><span class="tag tag-og">O&amp;G</span></span>Trisun Energy Services: Revived from $1M/year in losses to $2M/year EBITDA in 8 months; resolved RRC violations; sold for $7M at month 13 — an $8M+ swing</li>
+        <li><span class="hl-tag"><span class="tag tag-og">O&amp;G</span></span>EcoStim Energy Solutions: Generated $45M in new contract sales as VP of Sales &amp; Technology</li>
+        <li><span class="hl-tag"><span class="tag tag-og">O&amp;G</span></span>Core Laboratories (ProTechnics): Managed $10M/year in oilfield tracer service sales across Tulsa, Arkansas, and Kansas</li>
+        <li><span class="hl-tag"><span class="tag tag-og">O&amp;G</span></span>Halliburton: Supervised 200+ fracturing operations and managed ~$60M/year in accounts; recognized as top seller of new technology in the region</li>
+        <li><span class="hl-tag"><span class="tag tag-og">O&amp;G</span></span>Co-authored SPE Paper #100143 on coiled tubing-assisted fracturing, published at the 2006 ICoTA Conference</li>
+      </ul>
+    </section>
+
+    <!-- PUBLICATIONS -->
+    <section class="section">
+      <div class="section-title">Publications &amp; Thought Leadership</div>
+      <ul class="pub-list">
+        <li>"The Power Crunch Everyone Is Talking About — And TURBINE-X Can Solve" &nbsp;·&nbsp; LinkedIn Pulse, Feb. 2026</li>
+        <li>"Oil Field Microgrids Will Help Meet Growing Electricity Demand" &nbsp;·&nbsp; American Oil &amp; Gas Reporter, Sep. 2024</li>
+        <li>"Gas-Fired Microgrids Demonstrate Possibilities of Rethinking Power System" <span class="pub-cover">[Cover Story]</span> &nbsp;·&nbsp; AOGR, Mar. 2024</li>
+        <li>Oklahoma Senate Interim Study IS-2023-56 — Energy Infrastructure &amp; Wellhead Gas Conversion &nbsp;·&nbsp; Capitol Presentation, Oct. 2023</li>
+        <li>SPE Paper #100143 — Coiled Tubing Assisted Fracturing Method, Elm Grove Field &nbsp;·&nbsp; ICoTA, Apr. 2006</li>
+      </ul>
+    </section>
+
+  </div>
+</div>
+</body>
+</html>
