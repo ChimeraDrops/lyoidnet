@@ -333,7 +333,151 @@
       display: block;
     }
     .cv.hr-col { color: #fb923c; }
-    .cv.empty { color: #b0bbcc; font-weight: 400; font-family: inherit; color: #b0bbcc; }
+    .cv.empty { color: #b0bbcc; font-weight: 400; font-family: inherit; }
+
+    /* ── MULTIPLE UNITS ──────────────────────────── */
+    .mu-toggle-row {
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 0.9rem;
+    }
+    .mu-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--blue-light);
+      color: var(--blue-bright);
+      border: 2px solid rgba(96,165,250,0.35);
+      border-radius: 8px;
+      padding: 0.6rem 1.1rem;
+      font-size: 0.82rem;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.18s, border-color 0.18s, color 0.18s;
+      font-family: inherit;
+    }
+    .mu-btn:hover { background: rgba(96,165,250,0.22); border-color: var(--blue-bright); }
+    .mu-btn.active {
+      background: var(--orange);
+      color: #fff;
+      border-color: var(--orange);
+    }
+    .mu-btn .mu-chev { transition: transform 0.2s; }
+    .mu-btn.active .mu-chev { transform: rotate(180deg); }
+    .mu-hint { font-size: 0.78rem; color: var(--muted); }
+
+    .mu-panel {
+      margin-top: 1.2rem;
+      border-top: 1px solid var(--border);
+      padding-top: 1.2rem;
+      display: none;
+    }
+    .mu-panel.open { display: block; }
+
+    .mu-tbl-wrap { overflow-x: auto; }
+    table.mu-tbl { width: 100%; border-collapse: collapse; font-size: 0.88rem; min-width: 540px; }
+    table.mu-tbl thead th {
+      background: var(--blue-light);
+      color: var(--text);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 0.6rem 0.7rem;
+      text-align: left;
+      border-bottom: 2px solid var(--border);
+      white-space: nowrap;
+    }
+    table.mu-tbl tbody td {
+      padding: 0.45rem 0.5rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: middle;
+    }
+    table.mu-tbl tbody tr:last-child td { border-bottom: none; }
+    table.mu-tbl .mu-row-num {
+      font-family: var(--mono);
+      color: var(--muted);
+      font-size: 0.8rem;
+      width: 2.2rem;
+      text-align: center;
+    }
+    table.mu-tbl input {
+      width: 100%;
+      border: 2px solid var(--border);
+      border-radius: 6px;
+      background: transparent;
+      color: var(--text);
+      padding: 0.5rem 0.6rem;
+      font-size: 0.92rem;
+      font-weight: 500;
+      outline: none;
+      transition: border-color 0.18s;
+      font-family: inherit;
+    }
+    table.mu-tbl input:focus { border-color: var(--blue); }
+    table.mu-tbl input::placeholder { color: #6b7891; }
+    table.mu-tbl tfoot td {
+      padding: 0.7rem 0.7rem;
+      background: rgba(255,255,255,0.04);
+      border-top: 2px solid var(--border);
+      font-size: 0.85rem;
+    }
+    .mu-foot-lbl {
+      font-size: 0.72rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--muted);
+    }
+    .mu-foot-val {
+      font-family: var(--mono);
+      font-weight: 700;
+      color: var(--blue-bright);
+      display: block;
+      margin-top: 0.15rem;
+    }
+    .mu-foot-val.empty { color: #b0bbcc; font-weight: 400; font-family: inherit; }
+
+    .mu-actions {
+      margin-top: 0.9rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .mu-clear {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.45rem 0.85rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      transition: color 0.18s, border-color 0.18s;
+      font-family: inherit;
+    }
+    .mu-clear:hover { color: var(--text); border-color: var(--blue); }
+
+    /* Lock state for primary inputs when multi-unit drives them */
+    .input-wrap.mu-locked {
+      background: rgba(96,165,250,0.06);
+      border-style: dashed;
+    }
+    .input-wrap.mu-locked input { cursor: not-allowed; color: var(--blue-bright); }
+    .mu-lock-note {
+      font-size: 0.72rem;
+      color: var(--blue-bright);
+      margin-top: 0.15rem;
+      display: none;
+    }
+    .mu-lock-note.show { display: block; }
 
     /* ── FOOTER ──────────────────────────────────── */
     footer {
@@ -389,18 +533,20 @@
 
         <div class="field">
           <label>Heat Rate</label>
-          <div class="input-wrap">
+          <div class="input-wrap" id="heatRate-wrap">
             <input type="number" id="heatRate" placeholder="e.g. 10000" min="0" step="any" />
             <span class="unit-tag">BTU / kWh</span>
           </div>
+          <div class="mu-lock-note" id="heatRate-lock-note">Auto-calculated weighted average from Multiple Units table</div>
         </div>
 
         <div class="field">
           <label>Facility Load (Max)</label>
-          <div class="input-wrap">
+          <div class="input-wrap" id="totalMW-wrap">
             <input type="number" id="totalMW" placeholder="e.g. 100" min="0" step="any" />
             <span class="unit-tag">MW</span>
           </div>
+          <div class="mu-lock-note" id="totalMW-lock-note">Auto-calculated sum from Multiple Units table</div>
         </div>
 
         <div class="field">
@@ -414,6 +560,50 @@
           </div>
         </div>
 
+      </div>
+
+      <!-- Multiple Units toggle + table -->
+      <div style="margin-top:1.5rem;">
+        <div class="mu-toggle-row">
+          <button type="button" class="mu-btn" id="muToggle" aria-expanded="false" aria-controls="muPanel">
+            <span>🔀 Multiple Units</span>
+            <span class="mu-chev">▾</span>
+          </button>
+          <span class="mu-hint">Mix up to 6 turbine types — heat rate auto-weights by MW contribution</span>
+        </div>
+
+        <div class="mu-panel" id="muPanel">
+          <div class="mu-tbl-wrap">
+            <table class="mu-tbl" id="muTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Heat Rate <span style="font-weight:400;opacity:.7">(BTU/kWh)</span></th>
+                  <th>MW per Unit</th>
+                  <th># of Units</th>
+                  <th>Subtotal MW</th>
+                </tr>
+              </thead>
+              <tbody id="muTbody"><!-- rows injected by JS --></tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="3" style="text-align:right;">
+                    <span class="mu-foot-lbl">Weighted Avg Heat Rate</span>
+                    <span class="mu-foot-val empty" id="muAvgHR">—</span>
+                  </td>
+                  <td colspan="2">
+                    <span class="mu-foot-lbl">Total Facility Load</span>
+                    <span class="mu-foot-val empty" id="muTotalMW">—</span>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+          <div class="mu-actions">
+            <span class="mu-hint">Weighted Avg = Σ(HR × MW × Qty) ÷ Σ(MW × Qty)</span>
+            <button type="button" class="mu-clear" id="muClear">Clear All Rows</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -757,8 +947,135 @@
   }
 
   // ── Event listeners ────────────────────────────
-  ['heatRate', 'totalMW', 'heatingValue', 'costValue', 'costUnit']
+  ['heatRate', 'totalMW', 'heatingValue', 'costValue']
     .forEach(id => document.getElementById(id).addEventListener('input', calculate));
+  document.getElementById('costUnit').addEventListener('change', calculate);
+
+  // ── Multiple Units feature ─────────────────────
+  const MU_ROWS = 6;
+  const muState = { active: false };
+
+  function buildMuRows() {
+    const tbody = document.getElementById('muTbody');
+    let html = '';
+    for (let i = 1; i <= MU_ROWS; i++) {
+      html += `
+        <tr>
+          <td class="mu-row-num">${i}</td>
+          <td><input type="number" class="mu-hr"  data-row="${i}" placeholder="e.g. 9500" min="0" step="any" /></td>
+          <td><input type="number" class="mu-mw"  data-row="${i}" placeholder="MW"       min="0" step="any" /></td>
+          <td><input type="number" class="mu-qty" data-row="${i}" placeholder="Qty"      min="0" step="1" /></td>
+          <td><span class="mu-foot-val empty" id="mu-sub-${i}">—</span></td>
+        </tr>`;
+    }
+    tbody.innerHTML = html;
+    tbody.querySelectorAll('input').forEach(inp => {
+      inp.addEventListener('input', recomputeMu);
+    });
+  }
+
+  function readMuTable() {
+    const rows = [];
+    let totalMW = 0;
+    let weightedNum = 0; // Σ(HR × MW × Qty)
+    for (let i = 1; i <= MU_ROWS; i++) {
+      const hr  = parseFloat(document.querySelector(`.mu-hr[data-row="${i}"]`).value);
+      const mw  = parseFloat(document.querySelector(`.mu-mw[data-row="${i}"]`).value);
+      const qty = parseFloat(document.querySelector(`.mu-qty[data-row="${i}"]`).value);
+      const valid = isFinite(hr) && hr > 0 && isFinite(mw) && mw > 0 && isFinite(qty) && qty > 0;
+      const subtotal = valid ? mw * qty : NaN;
+      rows.push({ i, hr, mw, qty, valid, subtotal });
+      if (valid) {
+        totalMW    += subtotal;
+        weightedNum += hr * subtotal;
+      }
+    }
+    const avgHR = totalMW > 0 ? weightedNum / totalMW : NaN;
+    return { rows, totalMW, avgHR };
+  }
+
+  function recomputeMu() {
+    const { rows, totalMW, avgHR } = readMuTable();
+
+    // Per-row subtotals
+    rows.forEach(r => {
+      const el = document.getElementById(`mu-sub-${r.i}`);
+      if (r.valid) {
+        el.textContent = fmt(r.subtotal, r.subtotal % 1 === 0 ? 0 : 2) + ' MW';
+        el.classList.remove('empty');
+      } else {
+        el.textContent = '—';
+        el.classList.add('empty');
+      }
+    });
+
+    // Totals
+    const avgEl = document.getElementById('muAvgHR');
+    const totEl = document.getElementById('muTotalMW');
+    if (isFinite(avgHR) && totalMW > 0) {
+      avgEl.textContent = fmt(avgHR, 1) + ' BTU/kWh';
+      avgEl.classList.remove('empty');
+      totEl.textContent = fmt(totalMW, totalMW % 1 === 0 ? 0 : 2) + ' MW';
+      totEl.classList.remove('empty');
+    } else {
+      avgEl.textContent = '—';
+      avgEl.classList.add('empty');
+      totEl.textContent = '—';
+      totEl.classList.add('empty');
+    }
+
+    // Push values into primary inputs while multi-unit mode is active
+    if (muState.active) {
+      const hrInput = document.getElementById('heatRate');
+      const mwInput = document.getElementById('totalMW');
+      if (isFinite(avgHR) && totalMW > 0) {
+        hrInput.value = avgHR.toFixed(2);
+        mwInput.value = totalMW;
+      } else {
+        hrInput.value = '';
+        mwInput.value = '';
+      }
+      calculate();
+    }
+  }
+
+  function setMuActive(on) {
+    muState.active = on;
+    const btn       = document.getElementById('muToggle');
+    const panel     = document.getElementById('muPanel');
+    const hrInput   = document.getElementById('heatRate');
+    const mwInput   = document.getElementById('totalMW');
+    const hrWrap    = document.getElementById('heatRate-wrap');
+    const mwWrap    = document.getElementById('totalMW-wrap');
+    const hrNote    = document.getElementById('heatRate-lock-note');
+    const mwNote    = document.getElementById('totalMW-lock-note');
+
+    btn.classList.toggle('active', on);
+    btn.setAttribute('aria-expanded', on ? 'true' : 'false');
+    panel.classList.toggle('open', on);
+
+    hrInput.readOnly = on;
+    mwInput.readOnly = on;
+    hrWrap.classList.toggle('mu-locked', on);
+    mwWrap.classList.toggle('mu-locked', on);
+    hrNote.classList.toggle('show', on);
+    mwNote.classList.toggle('show', on);
+
+    if (on) {
+      recomputeMu();
+    } else {
+      // Leave any populated values in place so user can tweak; just unlock.
+      calculate();
+    }
+  }
+
+  document.getElementById('muToggle').addEventListener('click', () => setMuActive(!muState.active));
+  document.getElementById('muClear').addEventListener('click', () => {
+    document.querySelectorAll('#muTbody input').forEach(inp => { inp.value = ''; });
+    recomputeMu();
+  });
+
+  buildMuRows();
 
   // Initial run (handles default heatingValue already filled in)
   calculate();
