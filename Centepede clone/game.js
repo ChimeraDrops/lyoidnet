@@ -34,13 +34,16 @@ let mushrooms = [];
 let centipede = [];
 let enemies = [];
 
+// Firing cooldown
+let lastFireTime = 0;
+const FIRE_COOLDOWN = 150; // milliseconds between shots
+
 // Input handling
 const keys = {};
 window.addEventListener('keydown', (e) => {
     keys[e.key] = true;
     if (e.key === ' ' && gameState === 'playing') {
         e.preventDefault();
-        shoot();
     }
 });
 window.addEventListener('keyup', (e) => {
@@ -161,6 +164,15 @@ function updatePlayer() {
     }
     if (keys['ArrowDown'] && player.y < canvas.height - player.height / 2) {
         player.y += player.speed;
+    }
+    
+    // Continuous firing when spacebar is held
+    if (keys[' ']) {
+        const currentTime = Date.now();
+        if (currentTime - lastFireTime >= FIRE_COOLDOWN) {
+            shoot();
+            lastFireTime = currentTime;
+        }
     }
 }
 
