@@ -1,0 +1,488 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: #f5f5f5;
+    color: #333;
+    overflow: hidden;
+}
+
+#game-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* Resource Panel */
+#resource-panel {
+    width: 280px;
+    background: #fff;
+    border-right: 2px solid #ddd;
+    padding: 20px;
+    overflow-y: auto;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+#resource-panel h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: #2c3e50;
+}
+
+#resource-panel h3 {
+    font-size: 14px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: #555;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 5px;
+}
+
+.resource-item, .prod-item, .cons-item, .troop-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 6px 0;
+    font-size: 13px;
+}
+
+.resource-item span, .prod-item span, .cons-item span, .troop-item span {
+    font-weight: 600;
+}
+
+#game-controls {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 2px solid #ddd;
+}
+
+.btn-primary, .btn-secondary {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-primary {
+    background: #3498db;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2980b9;
+}
+
+.btn-primary:disabled {
+    background: #bdc3c7;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background: #2ecc71;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #27ae60;
+}
+
+.btn-success, .btn-info, .btn-danger {
+    width: 100%;
+    padding: 10px;
+    margin: 6px 0;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-success {
+    background: #27ae60;
+    color: white;
+}
+
+.btn-success:hover {
+    background: #229954;
+}
+
+.btn-info {
+    background: #3498db;
+    color: white;
+}
+
+.btn-info:hover {
+    background: #2980b9;
+}
+
+.btn-danger {
+    background: #e74c3c;
+    color: white;
+}
+
+.btn-danger:hover {
+    background: #c0392b;
+}
+
+#game-management {
+    margin-top: 25px;
+    padding-top: 20px;
+    border-top: 2px solid #ddd;
+}
+
+#game-management h3 {
+    font-size: 14px;
+    margin-bottom: 10px;
+    color: #555;
+}
+
+#last-roll, #current-player {
+    margin-top: 10px;
+    font-size: 13px;
+    padding: 8px;
+    background: #ecf0f1;
+    border-radius: 4px;
+    text-align: center;
+}
+
+/* Board Container */
+#board-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #e8f4f8;
+}
+
+#hex-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: crosshair;
+}
+
+/* Terrain Legend */
+#terrain-legend {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 10px 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.legend-hex {
+    width: 20px;
+    height: 20px;
+    border-radius: 3px;
+    border: 1px solid #333;
+}
+
+/* Troop Legend */
+#troop-legend {
+    position: absolute;
+    top: 60px;
+    left: 10px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 12px 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+}
+
+#troop-legend h4 {
+    margin: 0 0 8px 0;
+    font-size: 12px;
+    color: #2c3e50;
+    font-weight: 700;
+}
+
+.legend-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+
+.troop-key {
+    font-size: 11px;
+    font-weight: 600;
+    color: #555;
+    white-space: nowrap;
+}
+
+/* Action Menu */
+#action-menu {
+    width: 300px;
+    background: #fff;
+    border-left: 2px solid #ddd;
+    padding: 20px;
+    overflow-y: auto;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+}
+
+#action-menu.hidden {
+    display: none;
+}
+
+.action-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.action-btn {
+    padding: 10px;
+    background: #34495e;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    background: #2c3e50;
+}
+
+.action-btn.active {
+    background: #e74c3c;
+}
+
+#action-details {
+    margin-top: 15px;
+}
+
+.action-item {
+    padding: 12px;
+    margin: 8px 0;
+    background: #ecf0f1;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.action-item:hover {
+    background: #d5dbdb;
+}
+
+.action-item-title {
+    font-weight: 600;
+    margin-bottom: 5px;
+    font-size: 13px;
+}
+
+.action-item-cost {
+    font-size: 11px;
+    color: #555;
+}
+
+.action-item-reward {
+    font-size: 11px;
+    color: #27ae60;
+    margin-top: 3px;
+}
+
+.action-item.insufficient {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Modal */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: white;
+    margin: 5% auto;
+    padding: 30px;
+    border-radius: 8px;
+    width: 80%;
+    max-width: 600px;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    color: #aaa;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #000;
+}
+
+/* Terrain Colors */
+.terrain-farmland { fill: #90EE90; }
+.terrain-mountain { fill: #8B7355; }
+.terrain-sea { fill: #4682B4; }
+.terrain-river { fill: #87CEEB; }
+.terrain-forest { fill: #228B22; }
+.terrain-desert { fill: #F4A460; }
+
+/* Icons and Indicators */
+.hex-number {
+    font-size: 10px;
+    font-weight: 600;
+    fill: #333;
+}
+
+.hex-icon {
+    font-size: 16px;
+}
+
+.troop-indicator {
+    stroke: #333;
+    stroke-width: 2;
+}
+
+/* Combat UI */
+.combat-panel {
+    padding: 15px;
+    background: #fff;
+}
+
+.combat-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin: 15px 0;
+}
+
+.combat-side {
+    padding: 10px;
+    border-radius: 4px;
+}
+
+.combat-attacker {
+    background: #e74c3c;
+    color: white;
+}
+
+.combat-defender {
+    background: #3498db;
+    color: white;
+}
+
+.combat-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.combat-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.combat-roll {
+    background: #2ecc71;
+    color: white;
+}
+
+.combat-retreat {
+    background: #95a5a6;
+    color: white;
+}
+
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
+.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+/* Loading Screen */
+#loading-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+#loading-screen.hidden {
+    display: none;
+}
+
+.loading-content {
+    text-align: center;
+    color: white;
+    padding: 40px;
+    background: #2c3e50;
+    border-radius: 10px;
+    min-width: 400px;
+}
+
+.loading-content h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+#loading-progress {
+    font-size: 48px;
+    font-weight: bold;
+    color: #3498db;
+    margin: 20px 0;
+    font-family: monospace;
+}
+
+#loading-status {
+    font-size: 16px;
+    color: #ecf0f1;
+    margin-top: 15px;
+    min-height: 24px;
+}

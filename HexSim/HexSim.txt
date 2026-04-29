@@ -1,0 +1,112 @@
+HexSim:
+
+A hexagonal based board game similar to Catan and with play look similar to civilization.  In this document I will define the rules for the game to be implemented by Claude AI in Visual studio code.
+
+The game will be built so as to be hosted on a website.  It should have a Hexagonal board that consists of 600 hexagons.  Each hexagon will be randomly assigned a land type.  The potential land types are Farmland, Mountains, Sea, River, Forest, Desert. The board will be randomly generated such that at least one side of each tile connects to a like land type. Specifically for ocean tiles they should all touch but be randomly dispersed.  River tiles need to touch another river tile and the last tile much touch the ocean. Only one side should touch a river so that you don't end up with a circular river. It is possible for a river to split in to a y. There should be and equal dispersion of all terrain types. So 100 of each type of terrain type.
+
+Once the board is generated the tiles will be given random number between 1-30 equally distributed.  So each number should appear 20 times, but be randomly dispersed across board.
+
+The player will pick one hex to build a camp on, then an ai player 1 will pick a tile for their first camp no closer than 6 tiles from any other camp. Then AI player 2 then AI player 3. All initial camps will be built on Farmland.
+
+Each turn a 20 side die will roll and generate a random number.  Any tile occupied by a settlement or directly bordering a tile with that number will receive 1 resource.  Resource distribution is as follows:
+Farmland - Food
+Mountain - Ore
+Sea - Food
+River - Water
+Forest - Wood
+Desert - Sand
+
+Each player will receive one of these resources per tile they are connected to that matches the roll.
+
+After the roll each player can use resources gained to do various tasks.  The tasks are divided as follows:
+Craft - Create new resources
+Build - Combine Resources to create new equipment/buildings/facilities/industry
+Improve - Upgrade facilities troops etc.
+Train - build new units
+Deploy - Move units to new squares
+Trade - Can trade 6 of any resource for 1 of any desired resource
+
+These tasks will cost resources. The cost array follows.
+Craft -
+Bricks - 1 water, 1 sand
+Bow - 1 wood
+Metal - 1 ore
+Gold - 1 ore
+Spear - 1 wood, 1 ore - provided a blacksmith has been built
+Sword - 3 metal - provided a blacksmith has been built
+Axe&Shield - 3 wood, 5 metal
+Boat - (If shipyard is built) 5 wood, 3 metal (Reward - awards 1 food per turn)
+
+Build -
+Well - 3 food, 2 wood (Reward - Generates 1 additional water when adjacent water tile number is rolled)
+Mine - 10 food, 10 wood, 5 bricks (Reward - Generates 1 additional ore when mountain tile is rolled)
+Barracks - 10 wood, 5 bricks (Reward - Allows player to train troops and special units)
+Farm - 4 wood (Reward - Generates 1 additional food when adjacent food tile number is rolled)
+Camp - 10 wood, 10 food, 10 bricks (Reward - Expands tiles settlement is connected to, works the same as first camp.) (Base defense rating = 20)
+Lumberyard - 10 wood, 5 metal (Reward - Generates 1 additional wood when adjacent wood tile is rolled)
+Blacksmith - 10 wood, 10 iron, 10 sand, 10 water (Allows player to craft weapons)
+Shipyard - 10 wood, 10 metal (Allows user to craft boats)
+Fort - 15 wood, 15 metal, 15 sand, 15 water (If a fort is within 2 tiles of a settlement the settlement can not be conquered until the fort is destroyed the fort base defense rating is 30 and increased by number of troops present as defined later)
+
+Improve -
+Camp - Settlement - 15 wood, 10 food (Reward - increases resource payout for tile rolls
+Settlement - Town - 15 wood, 15 ore, 15 bricks, 15 sand, 25 food
+Town - City - 20 wood, 20 bricks, 20 sand, 20 water, 50 food
+barracks - military college 30 wood, 30 bricks, 20 sand, 20 water, 100 food
+
+Train - 
+Farmer - 4 food, Generates 2 food per turn consumes 1 food and 1 water per turn.
+Hunter - 1 bow, 4 food Generates 3 food per turn, consumes 1 water and 1 food per turn)
+Worker - 2 food, Generates 1 food and 2 water per turn, consumes 1 food and 1 water per turn.
+Archer - 1 bow, 5 food consumes 1 water and 1 food per turn
+Spearman - 1 spear, 10 food consumes 2 food and 1 water per turn.
+Swordsman - 1 sword, 10 food consumes 2 food and 1 water per turn
+Axeman - 1 axe&shield, 10 food consumes 3 food and 2 water per turn
+Sailor - 3 water, 3 food, boat (Generates 3 water and 3 food per turn consumes 1 wood per turn)
+
+Deploy - 
+Can move troops from one hex to another adjacent hex.  If they move to a hex with no development then the soldier will just stand on the map or have a pawn indicator on the map.  If they move into a development a flag will be risen above the settlement structure.  Player will click in a hex and be provided a list of all troops present in that hex, they can assign how many of each type of soldier to move to adjacent hex.  Any soldier can only be moved once per turn to one adjacent hex.  So if they had 30 spearmen they could chose to move 20 by clicking currently occupied cell enter 20 next to the number of spearmen present in the tile, then click the tile on which they want to move. Assuming the adjacent tile is empty then the previous tile would have 10 assigned spearmen that can still move and the new tile would have 20 assigned spearmen that can no longer move.
+
+
+Each time the dice is rolled (there will be a roll dice button and an end turn button for the player, ai players will automatically perform their turn) resources are paid out per the before mentioned tiles and rewards and consumed per the before mentioned consumption rates.  After the player rolls the dice they have a menu where  they can navigate the items listed above and they can execute as many actions as they like for that turn until they click end turn.  They must have the required resources to do any activity listed and when they choose that activity their resource allocation is immediately reduced based on the cost of the action.
+
+OBJECTIVE:
+The objective of the game is to conquer all other settlements.  When troops are moved to an adjacent cell that contains enemy troops they will fight.  There will be two six sided dice roll each round until the battle is complete or the player that started attack retreats, they will have an option to retreat after each dice roll. Combat parameters are as follows:
+Archer - Health = 5, Attack = 1
+Spearman = Health = 10, Attack = 2
+Swordsman = Health = 15, Attack = 2
+Axeman = Health = 25, attack = 4
+
+BONUSES:
+
+Archer +1 attack versus Axeman
+Spearman +1 attack versus Archer
+Swordsman +1 attack versus Spearman
+Axeman +1 attack versus Swordsman
+
+Battle Rolls:
+The total potential attack available during a dice roll is number of troops times their attack power.  So if there are 20 archers attacking 20 archers, both sides have total attack value of 20.  If there are several types of troops that are being attacked each unit attacking will attack those they have an advantage against first to boost their attack value.  If the total value of dice roll is 7 that is 100% attack value. 1 = 5%, 2 = 10%, 3= 20%, 4 = 40%, 5= 60%, 6 = 80%, 7 - 100%, 8 = 80%, 9 = 60%, 10 = 40%, 11 = 10%, 12 = 5%.  First the attacker will attack.  The health of the units being attacked will be reduced and they will lose troops per defined in health allocations.  For example if 10 archers are being attacked at full health their total health value would be 50. If 10 archers are attacking and a 5 was rolled their attack value would be 0.6*10 = 6 and so the units would being attacked would lose one archer.  Then the units being attacked retaliate using the same dice roll attack strength formula and utilizing bonuses where appropriate and attacking troops will be reduced.  Once round is finished attacking player has an option to retreat or roll dice again for next round attack. Battle is over when attacker retreats or all troops are defeated on either side of battle.  Any troops that retreat can not be attacked or move for 2 subsequent turns.  Troops being attacked do not have a retreat option.
+
+Forts increase the attack and health of units stationed on their tile.
+Attack increase = +1 per troop
+Health increase = +15 per troop
+Additionally with a fort in place no camp/Settlement/town/city within 2 tiles may be attacked until fort is destroyed. Forts are destroyed when all soldiers stationed within them are defeated.
+
+Camp - Base Health = 50, each battle roll regardless of outcome they do 10 damage to attacking troops
+Settlement - Base Health = 100, each battle roll regardless of outcome they do 20 damage to attacking troops
+Town - Base Health = 200, each battle roll regardless of outcome they do 50 damage to attacking troops
+City - Base Health = 300, each battle roll regardless of outcome they do 150 damage to attacking troops
+
+Health of settlements/camp/town/city does not deplete during an attack until all defenders have been eliminated.
+
+
+When a fort is destroyed the tile become empty and all bonuses provided by the fort are negated.
+When a town city or settlement is defeated it becomes the property of the attacker but all improvements are removed.
+
+Visuals:
+
+Would like for the game to have some enhancements to represent the type of tile it is.  Would like an icon to appear on tiles that are occupied that represent whether it is a camp, settlement, town, city or fort. There should be a UI essentially on the top left of the screen that shows current available resources, current total number of troops, flags and pawns on the board that show where troops are stationed, detailed popup menu of troops present when player clicks on a tile.  The stats should also show current resource production and consumption.  If a user consumes more than any current resource they have available they lose highest ranking troops required until they are able to cost the consumption spend.  So if a player loses a settlement it is possible that their consumption levels far exceed their ability to support the army and they quickly have major attrition until they are able to cover the consumption costs. 
+
+
+ 
+

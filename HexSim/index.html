@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HexSim - Strategy Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Resource Panel -->
+        <div id="resource-panel">
+            <h2>Resources</h2>
+            <div id="resources">
+                <div class="resource-item">Food: <span id="food">0</span></div>
+                <div class="resource-item">Ore: <span id="ore">0</span></div>
+                <div class="resource-item">Water: <span id="water">0</span></div>
+                <div class="resource-item">Wood: <span id="wood">0</span></div>
+                <div class="resource-item">Sand: <span id="sand">0</span></div>
+                <div class="resource-item">Bricks: <span id="bricks">0</span></div>
+                <div class="resource-item">Metal: <span id="metal">0</span></div>
+                <div class="resource-item">Gold: <span id="gold">0</span></div>
+            </div>
+            
+            <h3>Equipment & Items</h3>
+            <div id="equipment">
+                <div class="resource-item">🏹 Bow: <span id="bow">0</span></div>
+                <div class="resource-item">🗡️ Spear: <span id="spear">0</span></div>
+                <div class="resource-item">⚔️ Sword: <span id="sword">0</span></div>
+                <div class="resource-item">🪓 Axe&Shield: <span id="axe&shield">0</span></div>
+                <div class="resource-item">⛵ Boat: <span id="boat">0</span></div>
+            </div>
+            
+            <h3>Production</h3>
+            <div id="production">
+                <div class="prod-item">Food: <span id="prod-food">+0</span></div>
+                <div class="prod-item">Ore: <span id="prod-ore">+0</span></div>
+                <div class="prod-item">Water: <span id="prod-water">+0</span></div>
+                <div class="prod-item">Wood: <span id="prod-wood">+0</span></div>
+                <div class="prod-item">Sand: <span id="prod-sand">+0</span></div>
+            </div>
+            
+            <h3>Consumption</h3>
+            <div id="consumption">
+                <div class="cons-item">Food: <span id="cons-food">-0</span></div>
+                <div class="cons-item">Water: <span id="cons-water">-0</span></div>
+                <div class="cons-item">Wood: <span id="cons-wood">-0</span></div>
+            </div>
+            
+            <h3>Troops</h3>
+            <div id="troops-count">
+                <div class="troop-item">Farmers: <span id="count-farmer">0</span></div>
+                <div class="troop-item">Hunters: <span id="count-hunter">0</span></div>
+                <div class="troop-item">Workers: <span id="count-worker">0</span></div>
+                <div class="troop-item">Archers: <span id="count-archer">0</span></div>
+                <div class="troop-item">Spearmen: <span id="count-spearman">0</span></div>
+                <div class="troop-item">Swordsmen: <span id="count-swordsman">0</span></div>
+                <div class="troop-item">Axemen: <span id="count-axeman">0</span></div>
+                <div class="troop-item">Sailors: <span id="count-sailor">0</span></div>
+            </div>
+            
+            <div id="game-controls">
+                <button id="roll-dice" class="btn-primary">Roll Dice</button>
+                <button id="end-turn" class="btn-secondary">End Turn</button>
+                <div id="last-roll">Last Roll: -</div>
+                <div id="current-player">Current: Player</div>
+            </div>
+            
+            <div id="game-management">
+                <h3>Game Management</h3>
+                <button id="save-game" class="btn-success">💾 Save Game</button>
+                <button id="load-game" class="btn-info">📂 Load Game</button>
+                <button id="new-game" class="btn-danger">🔄 New Game</button>
+            </div>
+        </div>
+        
+        <!-- Game Board -->
+        <div id="board-container">
+            <div id="terrain-legend">
+                <div class="legend-item">
+                    <div class="legend-hex" style="background-color: #90EE90;"></div>
+                    <span>Farmland</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-hex" style="background-color: #228B22;"></div>
+                    <span>Forest</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-hex" style="background-color: #8B7355;"></div>
+                    <span>Mountain</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-hex" style="background-color: #F4A460;"></div>
+                    <span>Desert</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-hex" style="background-color: #87CEEB;"></div>
+                    <span>River</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-hex" style="background-color: #4682B4;"></div>
+                    <span>Ocean</span>
+                </div>
+            </div>
+            
+            <div id="troop-legend">
+                <h4>Troop Icons:</h4>
+                <div class="legend-row">
+                    <span class="troop-key">F=Farmer</span>
+                    <span class="troop-key">H=Hunter</span>
+                    <span class="troop-key">W=Worker</span>
+                </div>
+                <div class="legend-row">
+                    <span class="troop-key">A=Archer</span>
+                    <span class="troop-key">S=Spearman</span>
+                    <span class="troop-key">K=Swordsman</span>
+                </div>
+                <div class="legend-row">
+                    <span class="troop-key">X=Axeman</span>
+                    <span class="troop-key">N=Sailor</span>
+                </div>
+            </div>
+            
+            <canvas id="hex-canvas"></canvas>
+        </div>
+        
+        <!-- Action Menu -->
+        <div id="action-menu" class="hidden">
+            <h2>Actions</h2>
+            <div class="action-section">
+                <button class="action-btn" data-action="craft">Craft</button>
+                <button class="action-btn" data-action="build">Build</button>
+                <button class="action-btn" data-action="improve">Improve</button>
+                <button class="action-btn" data-action="train">Train</button>
+                <button class="action-btn" data-action="deploy">Deploy</button>
+                <button class="action-btn" data-action="trade">Trade</button>
+            </div>
+            <div id="action-details"></div>
+        </div>
+    </div>
+    
+    <!-- Modal for detailed views -->
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+    
+    <!-- Loading screen -->
+    <div id="loading-screen">
+        <div class="loading-content">
+            <h2>Generating HexSim World...</h2>
+            <div id="loading-progress"></div>
+            <div id="loading-status">Initializing...</div>
+        </div>
+    </div>
+    
+    <script src="game.js"></script>
+</body>
+</html>
