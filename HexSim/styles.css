@@ -355,6 +355,31 @@ body {
     background: #229954;
 }
 
+/* Trade Buttons */
+.trade-btn {
+    padding: 6px 8px;
+    background: #9b59b6;
+    color: white;
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.trade-btn:hover {
+    background: #8e44ad;
+}
+
+.trade-max {
+    background: #27ae60;
+}
+
+.trade-max:hover {
+    background: #229954;
+}
+
 /* Modal */
 .modal {
     display: none;

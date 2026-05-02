@@ -3088,9 +3088,26 @@ class Game {
             player.resources[giveResource] -= 6;
             player.addResource(receiveResource, 1);
             this.ui.update();
+            this.ui.showActionMenu('trade');
         } else {
             alert('Need 6 of the resource to trade!');
         }
+    }
+    
+    tradeMultiple(giveResource, receiveResource, count) {
+        const player = this.state.getCurrentPlayer();
+        const maxTrades = Math.floor(player.resources[giveResource] / 6);
+        const actualTrades = Math.min(count, maxTrades);
+        
+        if (actualTrades <= 0) {
+            alert('Need at least 6 of the resource to trade!');
+            return;
+        }
+        
+        player.resources[giveResource] -= actualTrades * 6;
+        player.addResource(receiveResource, actualTrades);
+        this.ui.update();
+        this.ui.showActionMenu('trade');
     }
     
     deployTroops(fromHex, toHex, troopCounts) {
@@ -3795,27 +3812,65 @@ class UI {
         } else if (action === 'trade') {
             detailsDiv.innerHTML = '<h3>Trade Resources</h3><p>Trade 6 of any resource for 1 of any desired resource</p>';
             
+            const resourceIcons = {
+                food: '🌾',
+                ore: '⛰️',
+                water: '💧',
+                wood: '🪵',
+                sand: '🏖️'
+            };
+            
             const resources = ['food', 'ore', 'water', 'wood', 'sand'];
             resources.forEach(giveRes => {
-                if (player.resources[giveRes] >= 6) {
+                const maxTrades = Math.floor(player.resources[giveRes] / 6);
+                if (maxTrades >= 1) {
                     const tradeDiv = document.createElement('div');
                     tradeDiv.style.marginTop = '10px';
-                    tradeDiv.innerHTML = `<strong>Give 6 ${giveRes} for:</strong>`;
+                    tradeDiv.style.borderTop = '1px solid #444';
+                    tradeDiv.style.paddingTop = '8px';
+                    tradeDiv.innerHTML = `<strong>Give ${resourceIcons[giveRes]} ${giveRes} (have ${player.resources[giveRes]}, can trade ${maxTrades}x):</strong>`;
                     
                     resources.forEach(receiveRes => {
                         if (receiveRes !== giveRes) {
-                            const btn = document.createElement('button');
-                            btn.textContent = `1 ${receiveRes}`;
-                            btn.className = 'action-btn';
-                            btn.style.marginLeft = '5px';
-                            btn.addEventListener('click', () => this.game.trade(giveRes, receiveRes));
-                            tradeDiv.appendChild(btn);
+                            const receiveDiv = document.createElement('div');
+                            receiveDiv.style.marginTop = '6px';
+                            receiveDiv.style.marginLeft = '10px';
+                            receiveDiv.innerHTML = `<span style="display: inline-block; width: 100px;">For ${resourceIcons[receiveRes]} ${receiveRes}:</span>`;
+                            
+                            // Trade 1 button
+                            const btn1 = document.createElement('button');
+                            btn1.textContent = 'Trade 1';
+                            btn1.className = 'action-btn trade-btn';
+                            btn1.style.marginLeft = '5px';
+                            btn1.style.fontSize = '10px';
+                            btn1.style.padding = '4px 8px';
+                            btn1.addEventListener('click', () => this.game.trade(giveRes, receiveRes));
+                            receiveDiv.appendChild(btn1);
+                            
+                            // Trade Max button
+                            const btnMax = document.createElement('button');
+                            btnMax.textContent = `Trade Max (${maxTrades})`;
+                            btnMax.className = 'action-btn trade-btn trade-max';
+                            btnMax.style.marginLeft = '5px';
+                            btnMax.style.fontSize = '10px';
+                            btnMax.style.padding = '4px 8px';
+                            btnMax.addEventListener('click', () => this.game.tradeMultiple(giveRes, receiveRes, maxTrades));
+                            receiveDiv.appendChild(btnMax);
+                            
+                            tradeDiv.appendChild(receiveDiv);
                         }
                     });
                     
                     detailsDiv.appendChild(tradeDiv);
                 }
             });
+            
+            if (detailsDiv.children.length === 1) {
+                const noTradeDiv = document.createElement('div');
+                noTradeDiv.style.marginTop = '10px';
+                noTradeDiv.innerHTML = '<p><em>You need at least 6 of a resource to trade.</em></p>';
+                detailsDiv.appendChild(noTradeDiv);
+            }
         }
     }
     
