@@ -2154,6 +2154,7 @@ class Game {
     aiEvaluateCombat(player) {
         // Find enemy hexes adjacent to our troops
         const opportunities = [];
+        const humanPlayerId = 0; // Human is always player 0
         
         this.state.hexGrid.forEach(hex => {
             // Skip if no enemy presence
@@ -2186,11 +2187,24 @@ class Game {
                         
                         // Only attack if we have advantage
                         if (ourMilitary > enemyStrength * 1.5) {
+                            // Calculate distance from our capital to enemy hex
+                            let distanceFromCapital = 999;
+                            if (player.capital) {
+                                distanceFromCapital = HexUtils.distance(
+                                    player.capital.q, player.capital.r,
+                                    hex.q, hex.r
+                                );
+                            }
+                            
                             opportunities.push({
                                 fromHex: neighborHex,
                                 toHex: hex,
                                 ourStrength: ourMilitary,
-                                enemyStrength
+                                enemyStrength: enemyStrength,
+                                enemyPlayerId: hex.owner,
+                                isHuman: hex.owner === humanPlayerId,
+                                distanceFromCapital: distanceFromCapital,
+                                isCapital: hex.isCapital
                             });
                         }
                     }
@@ -2200,8 +2214,34 @@ class Game {
         
         if (opportunities.length === 0) return null;
         
-        // Return best opportunity (highest advantage)
-        opportunities.sort((a, b) => (b.ourStrength - b.enemyStrength) - (a.ourStrength - a.enemyStrength));
+        // Sort opportunities by priority:
+        // 1. Enemy capitals (highest priority)
+        // 2. AI enemies that are closer than human player
+        // 3. Closest enemies
+        // 4. Highest strength advantage
+        opportunities.sort((a, b) => {
+            // Prioritize attacking capitals
+            if (a.isCapital && !b.isCapital) return -1;
+            if (!a.isCapital && b.isCapital) return 1;
+            
+            // AI vs AI combat: prefer closer targets
+            if (!a.isHuman && !b.isHuman) {
+                return a.distanceFromCapital - b.distanceFromCapital;
+            }
+            
+            // If one is AI and one is human, prefer the closer one
+            if (a.isHuman !== b.isHuman) {
+                return a.distanceFromCapital - b.distanceFromCapital;
+            }
+            
+            // Same type of enemy, prefer closer then stronger advantage
+            const distDiff = a.distanceFromCapital - b.distanceFromCapital;
+            if (Math.abs(distDiff) > 3) return distDiff; // Significantly closer
+            
+            // Similar distance, prefer higher advantage
+            return (b.ourStrength - b.enemyStrength) - (a.ourStrength - a.enemyStrength);
+        });
+        
         return opportunities[0];
     }
     
@@ -2427,7 +2467,8 @@ class Game {
             if (totalMilitary >= 15) {
                 const combatOp = this.aiEvaluateCombat(player);
                 if (combatOp) {
-                    console.log(`💰 Rockefeller attacks with overwhelming force!`);
+                    const targetPlayer = this.state.players[combatOp.enemyPlayerId];
+                    console.log(`💰 Rockefeller attacks ${targetPlayer.name} with overwhelming force!`);
                     const militaryTypes = ['archer', 'spearman', 'swordsman', 'axeman'];
                     const troopCounts = {};
                     militaryTypes.forEach(type => {
@@ -2510,7 +2551,8 @@ class Game {
                 if (player.troops.archer >= 5) {
                     const combatOp = this.aiEvaluateCombat(player);
                     if (combatOp) {
-                        console.log(`⚔️ Geronimo ARCHER RUSH!`);
+                        const targetPlayer = this.state.players[combatOp.enemyPlayerId];
+                        console.log(`⚔️ Geronimo ARCHER RUSH targeting ${targetPlayer.name}!`);
                         const militaryTypes = ['archer', 'spearman', 'swordsman', 'axeman'];
                         const troopCounts = {};
                         militaryTypes.forEach(type => {
@@ -2817,7 +2859,8 @@ class Game {
             if (totalMilitary >= 20 && player.aiStrategyData.fortsBuilt >= 2) {
                 const combatOp = this.aiEvaluateCombat(player);
                 if (combatOp && combatOp.ourStrength > combatOp.enemyStrength * 2) {
-                    console.log(`🏰 Eisenhower advances fortress line!`);
+                    const targetPlayer = this.state.players[combatOp.enemyPlayerId];
+                    console.log(`🏰 Eisenhower advances fortress line against ${targetPlayer.name}!`);
                     const militaryTypes = ['archer', 'spearman', 'swordsman', 'axeman'];
                     const troopCounts = {};
                     militaryTypes.forEach(type => {
