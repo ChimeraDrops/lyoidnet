@@ -250,6 +250,7 @@ class Hex {
         this.troops = {}; // playerId -> { archer: 0, spearman: 0, ... }
         this.improvements = []; // well, mine, farm, etc.
         this.movedTroops = {}; // Track which troops have moved this turn
+        this.isCapital = false; // Whether this hex contains a player's capital
     }
 }
 
@@ -285,10 +286,13 @@ class Player {
             sailor: 0
         };
         this.settlements = []; // array of {q, r}
+        this.capital = null; // {q, r} of capital (first settlement)
         this.hasBlacksmith = false;
         this.hasShipyard = false;
         this.hasBarracks = false;
         this.hasMilitaryCollege = false;
+        this.aiStrategy = null; // For AI players: 'economic', 'aggressive', 'defensive'
+        this.aiStrategyData = {}; // Strategy-specific data (e.g., turn counters, pivot states)
     }
     
     addResource(type, amount) {
@@ -1379,6 +1383,13 @@ class Renderer {
             
             this.ctx.fillText(icon, x, y - 8);
             
+            // Draw capital indicator (crown)
+            if (hex.isCapital) {
+                this.ctx.fillStyle = '#FFD700';
+                this.ctx.font = '10px sans-serif';
+                this.ctx.fillText('👑', x, y - 18);
+            }
+            
             // Draw improvement count indicator if settlement has improvements
             if (['camp', 'settlement', 'town', 'city'].includes(hex.structure) && 
                 hex.improvements && hex.improvements.length > 0) {
@@ -1561,10 +1572,17 @@ class Game {
                 // Create players
                 this.state.players = [
                     new Player(0, 'Player', false),
-                    new Player(1, 'AI 1', true),
-                    new Player(2, 'AI 2', true),
-                    new Player(3, 'AI 3', true)
+                    new Player(1, 'Rockefeller', true),
+                    new Player(2, 'Geronimo', true),
+                    new Player(3, 'Eisenhower', true)
                 ];
+                
+                // Set AI strategies
+                this.state.players[1].aiStrategy = 'economic'; // Rockefeller: Economic Snowball
+                this.state.players[2].aiStrategy = 'aggressive'; // Geronimo: Archer Rush
+                this.state.players[2].aiStrategyData = { failedAttacks: 0, pivotTurn: null, mode: 'aggressive' };
+                this.state.players[3].aiStrategy = 'defensive'; // Eisenhower: Fortress Network
+                this.state.players[3].aiStrategyData = { campsBuilt: 0, fortsBuilt: 0 };
                 
                 console.log('Setting up renderer...');
                 loadingScreen.updateStatus('Setting up renderer...');
@@ -1641,6 +1659,12 @@ class Game {
         hex.owner = player.id;
         player.settlements.push({ q: hex.q, r: hex.r });
         
+        // Set as capital if first settlement
+        if (!player.capital) {
+            player.capital = { q: hex.q, r: hex.r };
+            hex.isCapital = true; // Mark hex as capital
+        }
+        
         // Give starting resources
         player.resources.food = 10;
         player.resources.wood = 10;
@@ -1688,6 +1712,12 @@ class Game {
             chosen.structure = 'camp';
             chosen.owner = player.id;
             player.settlements.push({ q: chosen.q, r: chosen.r });
+            
+            // Set as capital if first settlement
+            if (!player.capital) {
+                player.capital = { q: chosen.q, r: chosen.r };
+                chosen.isCapital = true;
+            }
             player.resources.food = 10;
             player.resources.wood = 10;
             player.resources.water = 5;
@@ -2198,195 +2228,14 @@ class Game {
             console.log(`🎲 ${player.name} rolled ${this.state.lastRoll}: You received no resources from this roll.`);
         }
         
-        // Enhanced AI logic with trading, combat, and expansion
+        // Execute strategy-specific AI
         if (player.settlements.length > 0) {
-            let actionTaken = true;
-            let iterations = 0;
-            const maxIterations = 10; // Prevent infinite loops
-            
-            // Keep taking actions until we can't do anything useful
-            while (actionTaken && iterations < maxIterations) {
-                actionTaken = false;
-                iterations++;
-                
-                // PHASE 1: COMBAT - Attack if we have a good opportunity
-                const combatOp = this.aiEvaluateCombat(player);
-                if (combatOp) {
-                    console.log(`🤖 ${player.name} is attacking!`);
-                    // Move all military troops to attack
-                    const militaryTypes = ['archer', 'spearman', 'swordsman', 'axeman'];
-                    const troopCounts = {};
-                    militaryTypes.forEach(type => {
-                        if (combatOp.fromHex.troops[player.id][type]) {
-                            troopCounts[type] = combatOp.fromHex.troops[player.id][type];
-                        }
-                    });
-                    this.deployTroops(combatOp.fromHex, combatOp.toHex, troopCounts);
-                    actionTaken = true;
-                    continue;
-                }
-                
-                // PHASE 2: EXPANSION - Try to build new camps
-                if (player.settlements.length < 3) { // Limit expansion
-                    if (player.canAfford(RECIPES.camp)) {
-                        const location = this.aiFindValidCampLocation(player);
-                        if (location) {
-                            player.spend(RECIPES.camp);
-                            location.structure = 'camp';
-                            location.owner = player.id;
-                            player.settlements.push({ q: location.q, r: location.r });
-                            console.log(`🤖 ${player.name} built a new camp!`);
-                            this.renderer.render();
-                            actionTaken = true;
-                            continue;
-                        }
-                    } else {
-                        // Try trading to afford camp
-                        if (this.aiAttemptTradeFor(player, RECIPES.camp)) {
-                            actionTaken = true;
-                            continue;
-                        }
-                    }
-                }
-                
-                // PHASE 3: BASIC CRAFTING - Craft essential items (bricks, metal)
-                // Craft bricks if we have water and sand
-                if ((player.resources.bricks || 0) < 10 && player.canAfford(RECIPES.bricks)) {
-                    this.craft('bricks');
-                    console.log(`🤖 ${player.name} crafted bricks!`);
-                    actionTaken = true;
-                    continue;
-                }
-                
-                // Craft metal if we have ore
-                if ((player.resources.metal || 0) < 5 && player.canAfford(RECIPES.metal)) {
-                    this.craft('metal');
-                    console.log(`🤖 ${player.name} crafted metal!`);
-                    actionTaken = true;
-                    continue;
-                }
-                
-                // PHASE 4: INFRASTRUCTURE - Build barracks if needed
-                if (!player.hasBarracks) {
-                    if (player.canAfford(RECIPES.barracks)) {
-                        this.build('barracks');
-                        console.log(`🤖 ${player.name} built barracks!`);
-                        actionTaken = true;
-                        continue;
-                    } else {
-                        // Try trading to afford barracks (for raw resources only)
-                        if (this.aiAttemptTradeFor(player, RECIPES.barracks)) {
-                            actionTaken = true;
-                            continue;
-                        }
-                    }
-                }
-                
-                // PHASE 5: CRAFTING - Make equipment for troops
-                if (player.hasBarracks) {
-                    // Craft bows for archers
-                    if ((player.resources.bow || 0) < 2 && player.canAfford(RECIPES.bow)) {
-                        this.craft('bow');
-                        console.log(`🤖 ${player.name} crafted a bow!`);
-                        actionTaken = true;
-                        continue;
-                    }
-                    
-                    // Build blacksmith if we have resources
-                    if (!player.hasBlacksmith && player.canAfford(RECIPES.blacksmith)) {
-                        this.build('blacksmith');
-                        console.log(`🤖 ${player.name} built blacksmith!`);
-                        actionTaken = true;
-                        continue;
-                    }
-                    
-                    // Craft spears if we have blacksmith
-                    if (player.hasBlacksmith && (player.resources.spear || 0) < 2 && player.canAfford(RECIPES.spear)) {
-                        this.craft('spear');
-                        console.log(`🤖 ${player.name} crafted a spear!`);
-                        actionTaken = true;
-                        continue;
-                    }
-                }
-                
-                // PHASE 6: ECONOMY - Train workers and farmers
-                if (player.canAfford(RECIPES.worker) && player.troops.worker < 5) {
-                    this.train('worker');
-                    actionTaken = true;
-                    continue;
-                }
-                
-                if (player.canAfford(RECIPES.farmer) && player.troops.farmer < 5) {
-                    this.train('farmer');
-                    actionTaken = true;
-                    continue;
-                }
-                
-                // PHASE 7: MILITARY - Train troops
-                if (player.hasBarracks) {
-                    // Prefer spearmen if we can craft/afford them
-                    if (player.canAfford(RECIPES.spearman)) {
-                        this.train('spearman');
-                        actionTaken = true;
-                        continue;
-                    } else if (player.canAfford(RECIPES.archer)) {
-                        this.train('archer');
-                        actionTaken = true;
-                        continue;
-                    }
-                    
-                    // Try trading to afford military units
-                    if (this.aiAttemptTradeFor(player, RECIPES.spearman)) {
-                        actionTaken = true;
-                        continue;
-                    } else if (this.aiAttemptTradeFor(player, RECIPES.archer)) {
-                        actionTaken = true;
-                        continue;
-                    }
-                }                
-                // PHASE 8: UPGRADES - Upgrade settlements
-                let upgraded = false;
-                player.settlements.forEach(({q, r}) => {
-                    if (upgraded) return;
-                    const hex = this.state.getHex(q, r);
-                    if (hex) {
-                        if (hex.structure === 'camp' && player.canAfford(RECIPES['camp->settlement'])) {
-                            player.spend(RECIPES['camp->settlement']);
-                            hex.structure = 'settlement';
-                            console.log(`🤖 ${player.name} upgraded to settlement!`);
-                            upgraded = true;
-                            actionTaken = true;
-                        } else if (hex.structure === 'settlement' && player.canAfford(RECIPES['settlement->town'])) {
-                            player.spend(RECIPES['settlement->town']);
-                            hex.structure = 'town';
-                            console.log(`🤖 ${player.name} upgraded to town!`);
-                            upgraded = true;
-                            actionTaken = true;
-                        }
-                    }
-                });
-                if (upgraded) continue;
-                
-                // PHASE 9: TRADE EXCESS - Convert excess raw resources
-                // Trade any resource we have 12+ of for something useful (raw resources only)
-                const usefulResources = ['food', 'wood', 'water', 'ore', 'sand'];
-                let traded = false;
-                Object.entries(player.resources).forEach(([resource, amount]) => {
-                    if (traded) return;
-                    if (amount >= 12) {
-                        // Find a useful raw resource we're low on
-                        for (const target of usefulResources) {
-                            if ((player.resources[target] || 0) < 10 && resource !== target) {
-                                this.trade(resource, target);
-                                console.log(`🤖 ${player.name} traded excess ${resource} for ${target}`);
-                                traded = true;
-                                actionTaken = true;
-                                break;
-                            }
-                        }
-                    }
-                });
-                if (traded) continue;
+            if (player.aiStrategy === 'economic') {
+                this.aiRockefeller(player);
+            } else if (player.aiStrategy === 'aggressive') {
+                this.aiGeronimo(player);
+            } else if (player.aiStrategy === 'defensive') {
+                this.aiEisenhower(player);
             }
         }
         
@@ -2402,6 +2251,613 @@ class Game {
                 setTimeout(() => this.playAITurn(), 1000);
             }
         }, 1500);
+    }
+    
+    // ROCKEFELLER: Economic Snowball Strategy
+    // Focus: Workers → Improvements → Expansion → Upgrades → Mass Military
+    aiRockefeller(player) {
+        let actionTaken = true;
+        let iterations = 0;
+        const maxIterations = 10;
+        
+        while (actionTaken && iterations < maxIterations) {
+            actionTaken = false;
+            iterations++;
+            
+            // Priority 1: Train economic units (workers, farmers) - aim for 8-10 each
+            if (player.troops.worker < 10 && player.canAfford(RECIPES.worker)) {
+                this.train('worker');
+                console.log(`💰 Rockefeller trained worker (${player.troops.worker})`);
+                actionTaken = true;
+                continue;
+            }
+            
+            if (player.troops.farmer < 10 && player.canAfford(RECIPES.farmer)) {
+                this.train('farmer');
+                console.log(`💰 Rockefeller trained farmer (${player.troops.farmer})`);
+                actionTaken = true;
+                continue;
+            }
+            
+            // Priority 2: Build improvements on settlements
+            player.settlements.forEach(({ q, r }) => {
+                if (actionTaken) return;
+                const hex = this.state.getHex(q, r);
+                if (hex && (!hex.improvements || hex.improvements.length < 3)) {
+                    if (!hex.improvements) hex.improvements = [];
+                    
+                    // Try to build well, farm, mine in that order
+                    if (!hex.improvements.includes('well') && player.canAfford(RECIPES.well)) {
+                        player.spend(RECIPES.well);
+                        hex.improvements.push('well');
+                        console.log(`💰 Rockefeller built well at settlement`);
+                        actionTaken = true;
+                        return;
+                    }
+                    if (!hex.improvements.includes('farm') && player.canAfford(RECIPES.farm)) {
+                        player.spend(RECIPES.farm);
+                        hex.improvements.push('farm');
+                        console.log(`💰 Rockefeller built farm at settlement`);
+                        actionTaken = true;
+                        return;
+                    }
+                    if (!hex.improvements.includes('mine') && player.canAfford(RECIPES.mine)) {
+                        player.spend(RECIPES.mine);
+                        hex.improvements.push('mine');
+                        console.log(`💰 Rockefeller built mine at settlement`);
+                        actionTaken = true;
+                        return;
+                    }
+                }
+            });
+            if (actionTaken) continue;
+            
+            // Priority 3: Expand - build camps (up to 4)
+            if (player.settlements.length < 4 && player.canAfford(RECIPES.camp)) {
+                const location = this.aiFindValidCampLocation(player);
+                if (location) {
+                    player.spend(RECIPES.camp);
+                    location.structure = 'camp';
+                    location.owner = player.id;
+                    player.settlements.push({ q: location.q, r: location.r });
+                    console.log(`💰 Rockefeller expanded! (${player.settlements.length} camps)`);
+                    this.renderer.render();
+                    actionTaken = true;
+                    continue;
+                }
+            }
+            
+            // Priority 4: Upgrade settlements
+            let upgraded = false;
+            player.settlements.forEach(({ q, r }) => {
+                if (upgraded) return;
+                const hex = this.state.getHex(q, r);
+                if (hex) {
+                    if (hex.structure === 'camp' && player.canAfford(RECIPES['camp->settlement'])) {
+                        player.spend(RECIPES['camp->settlement']);
+                        hex.structure = 'settlement';
+                        console.log(`💰 Rockefeller upgraded to settlement!`);
+                        upgraded = true;
+                        actionTaken = true;
+                    } else if (hex.structure === 'settlement' && player.canAfford(RECIPES['settlement->town'])) {
+                        player.spend(RECIPES['settlement->town']);
+                        hex.structure = 'town';
+                        console.log(`💰 Rockefeller upgraded to town!`);
+                        upgraded = true;
+                        actionTaken = true;
+                    } else if (hex.structure === 'town' && player.canAfford(RECIPES['town->city'])) {
+                        player.spend(RECIPES['town->city']);
+                        hex.structure = 'city';
+                        console.log(`💰 Rockefeller upgraded to city!`);
+                        upgraded = true;
+                        actionTaken = true;
+                    }
+                }
+            });
+            if (upgraded) continue;
+            
+            // Priority 5: Craft basic resources
+            if ((player.resources.bricks || 0) < 20 && player.canAfford(RECIPES.bricks)) {
+                this.craft('bricks');
+                actionTaken = true;
+                continue;
+            }
+            if ((player.resources.metal || 0) < 15 && player.canAfford(RECIPES.metal)) {
+                this.craft('metal');
+                actionTaken = true;
+                continue;
+            }
+            
+            // Priority 6: Build military infrastructure only after economy is strong
+            if (player.troops.worker >= 8 && player.troops.farmer >= 8) {
+                if (!player.hasBarracks && player.canAfford(RECIPES.barracks)) {
+                    this.build('barracks');
+                    console.log(`💰 Rockefeller built barracks!`);
+                    actionTaken = true;
+                    continue;
+                }
+                
+                if (!player.hasBlacksmith && player.canAfford(RECIPES.blacksmith)) {
+                    this.build('blacksmith');
+                    console.log(`💰 Rockefeller built blacksmith!`);
+                    actionTaken = true;
+                    continue;
+                }
+                
+                // Priority 7: Mass produce military units with superior economy
+                if (player.hasBarracks && player.hasBlacksmith) {
+                    // Craft weapons
+                    if ((player.resources.bow || 0) < 5 && player.canAfford(RECIPES.bow)) {
+                        this.craft('bow');
+                        actionTaken = true;
+                        continue;
+                    }
+                    if ((player.resources.spear || 0) < 3 && player.canAfford(RECIPES.spear)) {
+                        this.craft('spear');
+                        actionTaken = true;
+                        continue;
+                    }
+                    if ((player.resources.sword || 0) < 2 && player.canAfford(RECIPES.sword)) {
+                        this.craft('sword');
+                        actionTaken = true;
+                        continue;
+                    }
+                    
+                    // Train military
+                    if (player.canAfford(RECIPES.swordsman)) {
+                        this.train('swordsman');
+                        actionTaken = true;
+                        continue;
+                    }
+                    if (player.canAfford(RECIPES.spearman)) {
+                        this.train('spearman');
+                        actionTaken = true;
+                        continue;
+                    }
+                    if (player.canAfford(RECIPES.archer)) {
+                        this.train('archer');
+                        actionTaken = true;
+                        continue;
+                    }
+                }
+            }
+            
+            // Priority 8: Attack once we have overwhelming force
+            const totalMilitary = player.troops.archer + player.troops.spearman + player.troops.swordsman + player.troops.axeman;
+            if (totalMilitary >= 15) {
+                const combatOp = this.aiEvaluateCombat(player);
+                if (combatOp) {
+                    console.log(`💰 Rockefeller attacks with overwhelming force!`);
+                    const militaryTypes = ['archer', 'spearman', 'swordsman', 'axeman'];
+                    const troopCounts = {};
+                    militaryTypes.forEach(type => {
+                        if (combatOp.fromHex.troops[player.id][type]) {
+                            troopCounts[type] = combatOp.fromHex.troops[player.id][type];
+                        }
+                    });
+                    this.deployTroops(combatOp.fromHex, combatOp.toHex, troopCounts);
+                    actionTaken = true;
+                    continue;
+                }
+            }
+            
+            // Priority 9: Trade excess resources
+            if (this.aiTradeExcessResources(player)) {
+                actionTaken = true;
+                continue;
+            }
+        }
+    }
+    
+    // GERONIMO: Archer Rush Strategy (with economy pivot)
+    // Focus: Quick barracks → Mass archers → Attack early; if fails, pivot to economy for 15 turns
+    aiGeronimo(player) {
+        let actionTaken = true;
+        let iterations = 0;
+        const maxIterations = 10;
+        
+        // Initialize strategy data if needed
+        if (!player.aiStrategyData.turnCount) {
+            player.aiStrategyData.turnCount = 0;
+        }
+        player.aiStrategyData.turnCount++;
+        
+        // Check if we should pivot modes
+        if (player.aiStrategyData.mode === 'aggressive' && player.aiStrategyData.failedAttacks >= 3) {
+            // Failed to conquer anyone after 3 tries, pivot to economy
+            player.aiStrategyData.mode = 'economic';
+            player.aiStrategyData.pivotTurn = this.state.turnNumber;
+            console.log(`⚔️ Geronimo pivoting to economy mode!`);
+        } else if (player.aiStrategyData.mode === 'economic' && player.aiStrategyData.pivotTurn && 
+                   (this.state.turnNumber - player.aiStrategyData.pivotTurn) >= 15) {
+            // 15 turns have passed, back to aggressive
+            player.aiStrategyData.mode = 'aggressive';
+            player.aiStrategyData.failedAttacks = 0;
+            console.log(`⚔️ Geronimo returning to aggressive mode!`);
+        }
+        
+        while (actionTaken && iterations < maxIterations) {
+            actionTaken = false;
+            iterations++;
+            
+            if (player.aiStrategyData.mode === 'aggressive') {
+                // AGGRESSIVE MODE: Rush to military
+                
+                // Priority 1: Build barracks ASAP
+                if (!player.hasBarracks && player.canAfford(RECIPES.barracks)) {
+                    this.build('barracks');
+                    console.log(`⚔️ Geronimo built barracks!`);
+                    actionTaken = true;
+                    continue;
+                }
+                
+                // Priority 2: Craft bows
+                if (player.hasBarracks && (player.resources.bow || 0) < 10 && player.canAfford(RECIPES.bow)) {
+                    this.craft('bow');
+                    actionTaken = true;
+                    continue;
+                }
+                
+                // Priority 3: Mass produce archers
+                if (player.hasBarracks && player.troops.archer < 15 && player.canAfford(RECIPES.archer)) {
+                    this.train('archer');
+                    console.log(`⚔️ Geronimo trained archer (${player.troops.archer})`);
+                    actionTaken = true;
+                    continue;
+                }
+                
+                // Priority 4: Attack aggressively once we have archers
+                if (player.troops.archer >= 5) {
+                    const combatOp = this.aiEvaluateCombat(player);
+                    if (combatOp) {
+                        console.log(`⚔️ Geronimo ARCHER RUSH!`);
+                        const militaryTypes = ['archer', 'spearman', 'swordsman', 'axeman'];
+                        const troopCounts = {};
+                        militaryTypes.forEach(type => {
+                            if (combatOp.fromHex.troops[player.id][type]) {
+                                troopCounts[type] = combatOp.fromHex.troops[player.id][type];
+                            }
+                        });
+                        this.deployTroops(combatOp.fromHex, combatOp.toHex, troopCounts);
+                        player.aiStrategyData.failedAttacks = (player.aiStrategyData.failedAttacks || 0) + 1;
+                        actionTaken = true;
+                        continue;
+                    }
+                }
+                
+                // Priority 5: Basic resource production
+                if (player.troops.farmer < 3 && player.canAfford(RECIPES.farmer)) {
+                    this.train('farmer');
+                    actionTaken = true;
+                    continue;
+                }
+                
+                // Priority 6: Craft basics
+                if ((player.resources.bricks || 0) < 5 && player.canAfford(RECIPES.bricks)) {
+                    this.craft('bricks');
+                    actionTaken = true;
+                    continue;
+                }
+                
+            } else {
+                // ECONOMIC MODE: Build up for 15 turns
+                
+                // Priority 1: Train economic units
+                if (player.troops.worker < 8 && player.canAfford(RECIPES.worker)) {
+                    this.train('worker');
+                    console.log(`⚔️ Geronimo (economic mode) trained worker`);
+                    actionTaken = true;
+                    continue;
+                }
+                
+                if (player.troops.farmer < 8 && player.canAfford(RECIPES.farmer)) {
+                    this.train('farmer');
+                    actionTaken = true;
+                    continue;
+                }
+                
+                // Priority 2: Build improvements
+                player.settlements.forEach(({ q, r }) => {
+                    if (actionTaken) return;
+                    const hex = this.state.getHex(q, r);
+                    if (hex && (!hex.improvements || hex.improvements.length < 2)) {
+                        if (!hex.improvements) hex.improvements = [];
+                        
+                        if (!hex.improvements.includes('farm') && player.canAfford(RECIPES.farm)) {
+                            player.spend(RECIPES.farm);
+                            hex.improvements.push('farm');
+                            console.log(`⚔️ Geronimo (economic mode) built farm`);
+                            actionTaken = true;
+                            return;
+                        }
+                        if (!hex.improvements.includes('well') && player.canAfford(RECIPES.well)) {
+                            player.spend(RECIPES.well);
+                            hex.improvements.push('well');
+                            actionTaken = true;
+                            return;
+                        }
+                    }
+                });
+                if (actionTaken) continue;
+                
+                // Priority 3: Upgrade settlements
+                let upgraded = false;
+                player.settlements.forEach(({ q, r }) => {
+                    if (upgraded) return;
+                    const hex = this.state.getHex(q, r);
+                    if (hex) {
+                        if (hex.structure === 'camp' && player.canAfford(RECIPES['camp->settlement'])) {
+                            player.spend(RECIPES['camp->settlement']);
+                            hex.structure = 'settlement';
+                            console.log(`⚔️ Geronimo (economic mode) upgraded settlement`);
+                            upgraded = true;
+                            actionTaken = true;
+                        }
+                    }
+                });
+                if (upgraded) continue;
+                
+                // Priority 4: Craft basic resources
+                if ((player.resources.bricks || 0) < 10 && player.canAfford(RECIPES.bricks)) {
+                    this.craft('bricks');
+                    actionTaken = true;
+                    continue;
+                }
+                if ((player.resources.metal || 0) < 5 && player.canAfford(RECIPES.metal)) {
+                    this.craft('metal');
+                    actionTaken = true;
+                    continue;
+                }
+            }
+            
+            // Trade excess resources
+            if (this.aiTradeExcessResources(player)) {
+                actionTaken = true;
+                continue;
+            }
+        }
+    }
+    
+    // EISENHOWER: Fortress Network Strategy
+    // Focus: Build 2-3 camps → Build forts → Economic development → Advance fortress line
+    aiEisenhower(player) {
+        let actionTaken = true;
+        let iterations = 0;
+        const maxIterations = 10;
+        
+        while (actionTaken && iterations < maxIterations) {
+            actionTaken = false;
+            iterations++;
+            
+            // Priority 1: Expand to 3 camps first
+            if (player.settlements.length < 3 && player.canAfford(RECIPES.camp)) {
+                const location = this.aiFindValidCampLocation(player);
+                if (location) {
+                    player.spend(RECIPES.camp);
+                    location.structure = 'camp';
+                    location.owner = player.id;
+                    player.settlements.push({ q: location.q, r: location.r });
+                    player.aiStrategyData.campsBuilt = player.settlements.length;
+                    console.log(`🏰 Eisenhower expanded! (${player.settlements.length} camps)`);
+                    this.renderer.render();
+                    actionTaken = true;
+                    continue;
+                }
+            }
+            
+            // Priority 2: Build forts to protect settlements (after having 2+ camps)
+            if (player.settlements.length >= 2) {
+                // Check if we have forts protecting our settlements
+                let needsFort = false;
+                player.settlements.forEach(({ q, r }) => {
+                    // Check if there's a fort within 2 tiles
+                    let hasFortProtection = false;
+                    const hexesInRange = HexUtils.getHexesInRange(q, r, 2);
+                    hexesInRange.forEach(({ q: fq, r: fr }) => {
+                        const hex = this.state.getHex(fq, fr);
+                        if (hex && hex.structure === 'fort' && hex.owner === player.id) {
+                            hasFortProtection = true;
+                        }
+                    });
+                    if (!hasFortProtection) {
+                        needsFort = true;
+                    }
+                });
+                
+                if (needsFort && player.canAfford(RECIPES.fort)) {
+                    // Find a good location for a fort (near settlements but not too close)
+                    const fortLocations = [];
+                    player.settlements.forEach(({ q, r }) => {
+                        const hexesNearby = HexUtils.getHexesInRange(q, r, 2);
+                        hexesNearby.forEach(({ q: fq, r: fr }) => {
+                            const hex = this.state.getHex(fq, fr);
+                            if (hex && !hex.structure && !hex.owner) {
+                                const dist = HexUtils.distance(q, r, fq, fr);
+                                if (dist >= 1 && dist <= 2) {
+                                    fortLocations.push({ hex, distance: dist });
+                                }
+                            }
+                        });
+                    });
+                    
+                    if (fortLocations.length > 0) {
+                        // Pick closest location to settlement
+                        fortLocations.sort((a, b) => a.distance - b.distance);
+                        const fortHex = fortLocations[0].hex;
+                        player.spend(RECIPES.fort);
+                        fortHex.structure = 'fort';
+                        fortHex.owner = player.id;
+                        player.aiStrategyData.fortsBuilt = (player.aiStrategyData.fortsBuilt || 0) + 1;
+                        console.log(`🏰 Eisenhower built fort! (${player.aiStrategyData.fortsBuilt} total)`);
+                        this.renderer.render();
+                        actionTaken = true;
+                        continue;
+                    }
+                }
+            }
+            
+            // Priority 3: Train economic units
+            if (player.troops.worker < 6 && player.canAfford(RECIPES.worker)) {
+                this.train('worker');
+                actionTaken = true;
+                continue;
+            }
+            
+            if (player.troops.farmer < 6 && player.canAfford(RECIPES.farmer)) {
+                this.train('farmer');
+                actionTaken = true;
+                continue;
+            }
+            
+            // Priority 4: Build improvements on settlements
+            player.settlements.forEach(({ q, r }) => {
+                if (actionTaken) return;
+                const hex = this.state.getHex(q, r);
+                if (hex && (!hex.improvements || hex.improvements.length < 2)) {
+                    if (!hex.improvements) hex.improvements = [];
+                    
+                    if (!hex.improvements.includes('well') && player.canAfford(RECIPES.well)) {
+                        player.spend(RECIPES.well);
+                        hex.improvements.push('well');
+                        console.log(`🏰 Eisenhower built well`);
+                        actionTaken = true;
+                        return;
+                    }
+                    if (!hex.improvements.includes('farm') && player.canAfford(RECIPES.farm)) {
+                        player.spend(RECIPES.farm);
+                        hex.improvements.push('farm');
+                        actionTaken = true;
+                        return;
+                    }
+                }
+            });
+            if (actionTaken) continue;
+            
+            // Priority 5: Craft basic resources
+            if ((player.resources.bricks || 0) < 15 && player.canAfford(RECIPES.bricks)) {
+                this.craft('bricks');
+                actionTaken = true;
+                continue;
+            }
+            if ((player.resources.metal || 0) < 10 && player.canAfford(RECIPES.metal)) {
+                this.craft('metal');
+                actionTaken = true;
+                continue;
+            }
+            
+            // Priority 6: Build military infrastructure
+            if (!player.hasBarracks && player.canAfford(RECIPES.barracks)) {
+                this.build('barracks');
+                console.log(`🏰 Eisenhower built barracks!`);
+                actionTaken = true;
+                continue;
+            }
+            
+            // Priority 7: Train defensive troops and station at forts
+            if (player.hasBarracks) {
+                // Craft weapons
+                if ((player.resources.bow || 0) < 3 && player.canAfford(RECIPES.bow)) {
+                    this.craft('bow');
+                    actionTaken = true;
+                    continue;
+                }
+                
+                // Train troops
+                if (player.canAfford(RECIPES.archer)) {
+                    this.train('archer');
+                    actionTaken = true;
+                    continue;
+                }
+                
+                if (!player.hasBlacksmith && player.canAfford(RECIPES.blacksmith)) {
+                    this.build('blacksmith');
+                    console.log(`🏰 Eisenhower built blacksmith!`);
+                    actionTaken = true;
+                    continue;
+                }
+                
+                if (player.hasBlacksmith) {
+                    if ((player.resources.spear || 0) < 2 && player.canAfford(RECIPES.spear)) {
+                        this.craft('spear');
+                        actionTaken = true;
+                        continue;
+                    }
+                    if (player.canAfford(RECIPES.spearman)) {
+                        this.train('spearman');
+                        actionTaken = true;
+                        continue;
+                    }
+                }
+            }
+            
+            // Priority 8: Upgrade settlements
+            let upgraded = false;
+            player.settlements.forEach(({ q, r }) => {
+                if (upgraded) return;
+                const hex = this.state.getHex(q, r);
+                if (hex) {
+                    if (hex.structure === 'camp' && player.canAfford(RECIPES['camp->settlement'])) {
+                        player.spend(RECIPES['camp->settlement']);
+                        hex.structure = 'settlement';
+                        console.log(`🏰 Eisenhower upgraded settlement!`);
+                        upgraded = true;
+                        actionTaken = true;
+                    } else if (hex.structure === 'settlement' && player.canAfford(RECIPES['settlement->town'])) {
+                        player.spend(RECIPES['settlement->town']);
+                        hex.structure = 'town';
+                        upgraded = true;
+                        actionTaken = true;
+                    }
+                }
+            });
+            if (upgraded) continue;
+            
+            // Priority 9: Only attack when we have strong defensive position and superior force
+            const totalMilitary = player.troops.archer + player.troops.spearman + player.troops.swordsman + player.troops.axeman;
+            if (totalMilitary >= 20 && player.aiStrategyData.fortsBuilt >= 2) {
+                const combatOp = this.aiEvaluateCombat(player);
+                if (combatOp && combatOp.ourStrength > combatOp.enemyStrength * 2) {
+                    console.log(`🏰 Eisenhower advances fortress line!`);
+                    const militaryTypes = ['archer', 'spearman', 'swordsman', 'axeman'];
+                    const troopCounts = {};
+                    militaryTypes.forEach(type => {
+                        if (combatOp.fromHex.troops[player.id][type]) {
+                            troopCounts[type] = combatOp.fromHex.troops[player.id][type];
+                        }
+                    });
+                    this.deployTroops(combatOp.fromHex, combatOp.toHex, troopCounts);
+                    actionTaken = true;
+                    continue;
+                }
+            }
+            
+            // Trade excess resources
+            if (this.aiTradeExcessResources(player)) {
+                actionTaken = true;
+                continue;
+            }
+        }
+    }
+    
+    aiTradeExcessResources(player) {
+        // Trade any resource we have 12+ of for something useful (raw resources only)
+        const usefulResources = ['food', 'wood', 'water', 'ore', 'sand'];
+        let traded = false;
+        Object.entries(player.resources).forEach(([resource, amount]) => {
+            if (traded) return;
+            if (amount >= 12) {
+                // Find a useful raw resource we're low on
+                for (const target of usefulResources) {
+                    if ((player.resources[target] || 0) < 10 && resource !== target && usefulResources.includes(resource)) {
+                        this.trade(resource, target);
+                        console.log(`🤖 ${player.name} traded excess ${resource} for ${target}`);
+                        traded = true;
+                        break;
+                    }
+                }
+            }
+        });
+        return traded;
     }
     
     craft(item) {
@@ -2427,6 +2883,48 @@ class Game {
         } else {
             alert('Insufficient resources!');
         }
+    }
+    
+    craftMultiple(item, count) {
+        const player = this.state.getCurrentPlayer();
+        const recipe = RECIPES[item];
+        
+        if (!recipe) return;
+        
+        // Check requirements
+        if (recipe.requires === 'blacksmith' && !player.hasBlacksmith) {
+            alert('Requires blacksmith!');
+            return;
+        }
+        if (recipe.requires === 'shipyard' && !player.hasShipyard) {
+            alert('Requires shipyard!');
+            return;
+        }
+        
+        // Check if we can afford count items
+        let canAffordCount = true;
+        Object.entries(recipe).forEach(([resource, amount]) => {
+            if (resource === 'requires') return;
+            if ((player.resources[resource] || 0) < amount * count) {
+                canAffordCount = false;
+            }
+        });
+        
+        if (!canAffordCount) {
+            alert(`Insufficient resources to craft ${count} ${item}!`);
+            return;
+        }
+        
+        // Craft all at once
+        Object.entries(recipe).forEach(([resource, amount]) => {
+            if (resource === 'requires') return;
+            player.resources[resource] -= amount * count;
+        });
+        player.addResource(item, count);
+        
+        this.ui.update();
+        // Update action menu to reflect new resource levels
+        this.ui.showActionMenu('craft');
     }
     
     build(structure) {
@@ -2463,6 +2961,13 @@ class Game {
             }
             // Structures that need placement on map
             else if (['camp', 'fort'].includes(structure)) {
+                // Check camp limit (max 6)
+                if (structure === 'camp') {
+                    if (player.settlements.length >= 6) {
+                        alert('You have built the maximum number of camps (6). Conquer enemy capitals to exceed this limit.');
+                        return;
+                    }
+                }
                 this.state.buildMode = structure;
                 this.state.buildRecipe = recipe;
                 alert(`Ready to build ${structure}! Click on a valid hex to place it. Resources will be spent when placed.`);
@@ -2503,6 +3008,8 @@ class Game {
             
             this.renderer.render();
             this.ui.update();
+            // Update action menu to reflect new resource levels
+            this.ui.showActionMenu('train');
         } else {
             alert('Insufficient resources!');
         }
@@ -2642,9 +3149,25 @@ class Game {
             structDef.health -= this.calculateTotalAttack(combat.attackerTroops);
             
             if (structDef.health <= 0) {
-                alert('Settlement conquered!');
-                combat.hex.owner = combat.attacker;
-                combat.hex.structure = null;
+                // Check if this is a capital
+                const defenderPlayer = this.state.players[combat.defender];
+                const isCapital = combat.hex.isCapital || 
+                    (defenderPlayer.capital && combat.hex.q === defenderPlayer.capital.q && combat.hex.r === defenderPlayer.capital.r);
+                
+                if (isCapital) {
+                    alert(`Capital conquered! ${defenderPlayer.name} is eliminated!`);
+                    this.conquerCapital(combat.attacker, combat.defender, combat.hex);
+                } else {
+                    alert('Settlement conquered!');
+                    combat.hex.owner = combat.attacker;
+                    // Keep structure but transfer ownership
+                    const attacker = this.state.players[combat.attacker];
+                    attacker.settlements.push({ q: combat.hex.q, r: combat.hex.r });
+                    // Remove from defender
+                    defenderPlayer.settlements = defenderPlayer.settlements.filter(
+                        s => !(s.q === combat.hex.q && s.r === combat.hex.r)
+                    );
+                }
                 this.state.activeCombat = null;
                 this.ui.hideCombatUI();
             }
@@ -2665,6 +3188,56 @@ class Game {
         }
         
         this.renderer.render();
+    }
+    
+    conquerCapital(attackerId, defenderId, capitalHex) {
+        const attacker = this.state.players[attackerId];
+        const defender = this.state.players[defenderId];
+        
+        // Transfer ALL resources from defender to attacker
+        Object.keys(defender.resources).forEach(resource => {
+            attacker.resources[resource] += defender.resources[resource];
+            defender.resources[resource] = 0;
+        });
+        
+        // Destroy all defender's other settlements
+        defender.settlements.forEach(({ q, r }) => {
+            const hex = this.state.getHex(q, r);
+            if (hex && !(hex.q === capitalHex.q && hex.r === capitalHex.r)) {
+                hex.structure = null;
+                hex.owner = null;
+                hex.improvements = [];
+            }
+        });
+        
+        // Destroy ALL defender's troops across entire map
+        this.state.hexGrid.forEach(hex => {
+            if (hex.troops && hex.troops[defenderId]) {
+                hex.troops[defenderId] = {};
+            }
+        });
+        
+        // Reset defender's troops count
+        Object.keys(defender.troops).forEach(troopType => {
+            defender.troops[troopType] = 0;
+        });
+        
+        // Clear defender's settlements and capital
+        defender.settlements = [];
+        defender.capital = null;
+        
+        // Destroy improvements at capital
+        capitalHex.improvements = [];
+        
+        // Transfer capital to attacker (as a camp at its current upgrade level)
+        capitalHex.owner = attackerId;
+        capitalHex.isCapital = false; // No longer a capital
+        attacker.settlements.push({ q: capitalHex.q, r: capitalHex.r });
+        
+        this.renderer.render();
+        this.ui.update();
+        
+        console.log(`🏛️ ${attacker.name} conquered ${defender.name}'s capital!`);
     }
     
     getAttackPercent(roll) {
@@ -2768,9 +3341,12 @@ class Game {
                     resources: { ...p.resources },
                     troops: { ...p.troops },
                     settlements: [...p.settlements],
+                    capital: p.capital ? { ...p.capital } : null,
                     hasBlacksmith: p.hasBlacksmith,
                     hasShipyard: p.hasShipyard,
-                    hasBarracks: p.hasBarracks
+                    hasBarracks: p.hasBarracks,
+                    aiStrategy: p.aiStrategy,
+                    aiStrategyData: { ...p.aiStrategyData }
                 })),
                 hexGrid: []
             };
@@ -2785,7 +3361,8 @@ class Game {
                     structure: hex.structure,
                     owner: hex.owner,
                     troops: hex.troops,
-                    improvements: [...(hex.improvements || [])]
+                    improvements: [...(hex.improvements || [])],
+                    isCapital: hex.isCapital || false
                 });
             });
             
@@ -2816,9 +3393,12 @@ class Game {
                 player.resources = { ...pData.resources };
                 player.troops = { ...pData.troops };
                 player.settlements = [...pData.settlements];
+                player.capital = pData.capital || null;
                 player.hasBlacksmith = pData.hasBlacksmith;
                 player.hasShipyard = pData.hasShipyard;
                 player.hasBarracks = pData.hasBarracks;
+                player.aiStrategy = pData.aiStrategy || null;
+                player.aiStrategyData = pData.aiStrategyData || {};
                 return player;
             });
             
@@ -2830,6 +3410,7 @@ class Game {
                 hex.owner = hexData.owner;
                 hex.troops = hexData.troops || {};
                 hex.improvements = hexData.improvements || [];
+                hex.isCapital = hexData.isCapital || false;
                 this.state.setHex(hex.q, hex.r, hex);
             });
             
@@ -3046,16 +3627,41 @@ class UI {
                 const recipe = RECIPES[item];
                 const canAfford = player.canAfford(recipe);
                 
+                // Calculate how many can be crafted
+                let maxCraftable = 999;
+                Object.entries(recipe).forEach(([resource, amount]) => {
+                    if (resource === 'requires') return;
+                    const available = player.resources[resource] || 0;
+                    const canMake = Math.floor(available / amount);
+                    maxCraftable = Math.min(maxCraftable, canMake);
+                });
+                
                 const div = document.createElement('div');
                 div.className = `action-item ${canAfford ? '' : 'insufficient'}`;
                 div.innerHTML = `
                     <div class="action-item-title">${item}</div>
                     <div class="action-item-cost">Cost: ${this.formatRecipe(recipe)}</div>
+                    <div class="craft-buttons">
+                        <button class="craft-btn" data-count="1" title="${this.formatRecipe(recipe)}">Craft 1</button>
+                        <button class="craft-btn" data-count="5" title="Cost: ${this.getMultiRecipeCost(recipe, 5)}">Craft 5</button>
+                        <button class="craft-btn" data-count="10" title="Cost: ${this.getMultiRecipeCost(recipe, 10)}">Craft 10</button>
+                        <button class="craft-btn craft-max" data-count="${maxCraftable}" title="Cost: ${this.getMultiRecipeCost(recipe, maxCraftable)}">Craft Max (${maxCraftable})</button>
+                    </div>
                 `;
                 
-                if (canAfford) {
-                    div.addEventListener('click', () => this.game.craft(item));
-                }
+                // Add event listeners to craft buttons
+                div.querySelectorAll('.craft-btn').forEach(btn => {
+                    const count = parseInt(btn.dataset.count);
+                    if (count > 0 && count <= maxCraftable) {
+                        btn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            this.game.craftMultiple(item, count);
+                        });
+                    } else {
+                        btn.disabled = true;
+                        btn.style.opacity = '0.5';
+                    }
+                });
                 
                 detailsDiv.appendChild(div);
             });
@@ -3063,17 +3669,28 @@ class UI {
             const buildings = ['well', 'mine', 'barracks', 'farm', 'camp', 'lumberyard', 'blacksmith', 'shipyard', 'fort'];
             buildings.forEach(building => {
                 const recipe = RECIPES[building];
-                const canAfford = player.canAfford(recipe);
+                let canAfford = player.canAfford(recipe);
+                
+                // Check camp limit
+                let disabled = false;
+                let disabledMessage = '';
+                if (building === 'camp' && player.settlements.length >= 6) {
+                    disabled = true;
+                    canAfford = false;
+                    disabledMessage = ' (Max camps reached - conquer enemy capitals to exceed limit)';
+                }
                 
                 const div = document.createElement('div');
-                div.className = `action-item ${canAfford ? '' : 'insufficient'}`;
+                div.className = `action-item ${(canAfford && !disabled) ? '' : 'insufficient'}`;
                 div.innerHTML = `
-                    <div class="action-item-title">${building}</div>
+                    <div class="action-item-title">${building}${disabledMessage}</div>
                     <div class="action-item-cost">Cost: ${this.formatRecipe(recipe)}</div>
                 `;
                 
-                if (canAfford) {
+                if (canAfford && !disabled) {
                     div.addEventListener('click', () => this.game.build(building));
+                } else if (disabled) {
+                    div.title = 'You have built the maximum number of camps';
                 }
                 
                 detailsDiv.appendChild(div);
@@ -3269,9 +3886,28 @@ class UI {
     }
     
     formatRecipe(recipe) {
+        const icons = {
+            food: '🌾', ore: '⛰️', water: '💧', wood: '🪵', sand: '🏖️',
+            bricks: '🧱', metal: '⚙️', gold: '💰',
+            bow: '🏹', spear: '🗡️', sword: '⚔️', 'axe&shield': '🪓', boat: '⛵'
+        };
+        
         return Object.entries(recipe)
             .filter(([k]) => k !== 'requires')
-            .map(([resource, amount]) => `${amount} ${resource}`)
+            .map(([resource, amount]) => `${amount} ${icons[resource] || ''}${resource}`)
+            .join(', ');
+    }
+    
+    getMultiRecipeCost(recipe, count) {
+        const icons = {
+            food: '🌾', ore: '⛰️', water: '💧', wood: '🪵', sand: '🏖️',
+            bricks: '🧱', metal: '⚙️', gold: '💰',
+            bow: '🏹', spear: '🗡️', sword: '⚔️', 'axe&shield': '🪓', boat: '⛵'
+        };
+        
+        return Object.entries(recipe)
+            .filter(([k]) => k !== 'requires')
+            .map(([resource, amount]) => `${amount * count} ${icons[resource] || ''}${resource}`)
             .join(', ');
     }
     

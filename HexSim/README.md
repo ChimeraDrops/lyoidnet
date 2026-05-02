@@ -80,11 +80,20 @@ Conquer all enemy settlements to win!
 3. Upgrade settlements to increase resource production
 4. Protect settlements with forts
 5. Balance military and economic development
+6. **Protect your capital!** If your capital is conquered, you lose all other camps and troops
+7. Use bulk crafting (Craft Max button) to quickly produce resources
+8. You can build a maximum of 6 camps, but conquering enemy capitals lets you exceed this limit
+9. Each AI player has a distinct strategy - adapt your tactics accordingly
 
 ## Technical Details
-- **Board Size**: ~600 hexagonal tiles
-- **Terrain Types**: 6 (balanced distribution)
-- **Number Distribution**: 1-30, each appearing 20 times
-- **Players**: 1 human + 3 AI
+- **Board Size**: ~817 hexagonal tiles (radius 16)
+- **Terrain Types**: 6 (balanced distribution - ~137 tiles each)
+- **Number Distribution**: 1-12, randomly distributed
+- **Players**: 1 human + 3 AI with distinct strategies
+  - **Rockefeller**: Economic Snowball - focuses on workers, improvements, expansion, then overwhelming military
+  - **Geronimo**: Archer Rush - aggressive early attacks with archers; pivots to economy for 15 turns if unsuccessful, then returns to aggression
+  - **Eisenhower**: Fortress Network - builds camps first, then forts for defense, develops economy behind fortress line
+- **Camp Limit**: Maximum 6 camps per player (can exceed by conquering enemy capitals)
+- **Capital System**: First camp is your capital; if conquered, all other camps are destroyed and all resources are transferred
 
 Built with vanilla JavaScript, HTML5 Canvas, and minimalist CSS design.
