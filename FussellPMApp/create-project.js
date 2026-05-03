@@ -24,19 +24,44 @@ try {
 
 // Check authentication on page load
 if (firebaseInitialized) {
+    // Hide form until auth is verified
+    const formElement = document.getElementById('create-project-form');
+    const authLoading = document.getElementById('auth-loading');
+    
+    if (formElement) {
+        formElement.style.display = 'none';
+    }
+    
     auth.onAuthStateChanged(user => {
         if (user) {
             console.log('User authenticated:', user.email);
             currentUser = user;
+            // Hide auth loading
+            if (authLoading) {
+                authLoading.classList.add('hidden');
+            }
             // Show user info in header
             document.getElementById('user-email').textContent = user.email;
             document.getElementById('user-info').classList.remove('hidden');
+            // Show the form
+            if (formElement) {
+                formElement.style.display = 'block';
+            }
+            // Initialize event listeners now that user is authenticated
+            initializeEventListeners();
         } else {
             console.log('No user authenticated, redirecting to login');
             // Redirect to login if not authenticated
             window.location.href = 'login.html?redirect=create-project.html';
         }
     });
+} else {
+    // If Firebase not initialized, hide auth loading and allow UI to work in demo mode
+    const authLoading = document.getElementById('auth-loading');
+    if (authLoading) {
+        authLoading.classList.add('hidden');
+    }
+    initializeEventListeners();
 }
 
 // State management
@@ -279,29 +304,45 @@ document.getElementById('create-project-form').addEventListener('submit', async 
     }
 });
 
-// Allow Enter key to add todos and emails
-document.getElementById('todo-input').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        addTodo();
-    }
-});
+// Allow Ente event listeners (called after auth check)
+function initializeEventListeners() {
+    console.log('Initializing event listeners');
+    renderTodos();
+    renderEmails();
 
-document.getElementById('email-input').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        addEmail();
+    // Attach event listeners to buttons
+    const addTodoBtn = document.getElementById('add-todo-btn');
+    const addEmailBtn = document.getElementById('add-email-btn');
+    const logoutBtn = document.getElementById('logout-btn');
+    
+    if (addTodoBtn) {
+        addTodoBtn.addEventListener('click', addTodo);
     }
-});
+    
+    if (addEmailBtn) {
+        addEmailBtn.addEventListener('click', addEmail);
+    }
+    
+    // Logout handler (only if button exists)
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            if (firebaseInitialized && auth) {
+                try {
+                    await auth.signOut();
+                    window.location.href = 'index.html';
+                } catch (error) {
+                    console.error('Logout error:', error);
+                }
+            }
+        });
+    }
+
+    console.log('Event listeners attached');
+}
 
 // Initialize
 console.log('Initializing create-project.js');
-console.log('Firebase initialized:', firebaseInitialized);
-renderTodos();
-renderEmails();
-
-// Attach event listeners to buttons
-document.getElementById('add-todo-btn').addEventListener('click', addTodo);
+console.log('Firebase initialized:', firebaseInitialized, addTodo);
 document.getElementById('add-email-btn').addEventListener('click', addEmail);
 
 // Logout handler
