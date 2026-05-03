@@ -2,7 +2,14 @@
 import firebaseConfig from './firebase-config.js';
 
 // Initialize Firebase
-firebase.initializeApp(firebaseConfig);
+try {
+    if (firebase.apps.length === 0) {
+        firebase.initializeApp(firebaseConfig);
+    }
+} catch (e) {
+    firebase.initializeApp(firebaseConfig);
+}
+
 const db = firebase.firestore();
 const auth = firebase.auth();
 const functions = firebase.functions();
@@ -18,17 +25,19 @@ let unsubscribeProject = null;
 function showAlert(message, type = 'info') {
     const alertContainer = document.getElementById('alert-container');
     const alertClass = type === 'error' ? 'alert-error' : type === 'success' ? 'alert-success' : 'alert-info';
-    
-    alertContainer.innerHTML = `
-        <div class="alert ${alertClass}">
-            ${message}
-        </div>
-    `;
-    
-    setTimeout(() => {
-        alertContainer.innerHTML = '';
-    }, 5000);
+    alertContainer.innerHTML = `<div class="alert ${alertClass}">${message}</div>`;
+    setTimeout(() => { alertContainer.innerHTML = ''; }, 5000);
 }
+
+// Logout
+window.logout = async function() {
+    try {
+        await auth.signOut();
+        window.location.href = 'index.html';
+    } catch (error) {
+        console.error('Logout error:', error);
+    }
+};
 
 // Check authentication and load user data
 auth.onAuthStateChanged(async (user) => {
@@ -36,104 +45,99 @@ auth.onAuthStateChanged(async (user) => {
         window.location.href = 'login.html';
         return;
     }
-    
+
     currentUser = user;
-    
+
     try {
-        // Get user data by email (since document ID may not match UID)
+        // Get user data by email
         const userQuery = await db.collection('users')
             .where('email', '==', user.email)
             .limit(1)
             .get();
-        
-        let userData = null;
+
         if (!userQuery.empty) {
-            userData = userQuery.docs[0].data();
+            const userData = userQuery.docs[0].data();
             document.getElementById('username-display').textContent = `Welcome, ${userData.username || user.email}!`;
         } else {
             document.getElementById('username-display').textContent = `Welcome, ${user.email}!`;
         }
-        
+
         // Check URL for projectId
         const urlParams = new URLSearchParams(window.location.search);
         const projectId = urlParams.get('projectId');
-        
-        if (projectId) {) {
+
+        if (projectId) {
+            loadProject(projectId);
+        } else {
+            loadUserProjects();
+        }
+    } catch (error) {
+        console.error('Error loading user data:', error);
+        document.getElementById('username-display').textContent = `Welcome, ${user.email}!`;
+        loadUserProjects();
+    }
+});
+
+// Load user's projects
+async function loadUserProjects() {
     const projectsList = document.getElementById('projects-list');
     projectsList.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
-    
+
     try {
-        // Query projects where user is creator or team member
-        const creatorProjects = await db.collection('projects')
+        // Query projects where user is creator
+        const creatorSnapshot = await db.collection('projects')
             .where('creatorId', '==', currentUser.uid)
             .get();
-        
-        const teamProjects = await db.collection('projects')
+
+        // Query projects where user is a team member
+        const memberSnapshot = await db.collection('projects')
             .where('teamMembers', 'array-contains', currentUser.email)
             .get();
-        
-        // Combine and deduplicate projects
+
+        // Combine and deduplicate
         const projectsMap = new Map();
-        
-        creatorProjects.forEach(doc => {
-            projectsMap.set(doc.id, { id: doc.id, ...doc.data() });
-        });
-        
-        teamProjects.forEach(doc => {
+        creatorSnapshot.forEach(doc => projectsMap.set(doc.id, { id: doc.id, ...doc.data() }));
+        memberSnapshot.forEach(doc => {
             if (!projectsMap.has(doc.id)) {
                 projectsMap.set(doc.id, { id: doc.id, ...doc.data() });
             }
         });
-        
+
         const projects = Array.from(projectsMap.values());
-        
+
         if (projects.length === 0) {
-            projectsList.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">You are not part of any projects yet. Create a new project to get started!</p>';
+            projectsList.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">No projects found. <a href="create-project.html">Create a new project</a> to get started!</p>';
             return;
         }
-        
+
         projectsList.innerHTML = projects.map(project => `
-            <div class="card" style="margin-bottom: 10px; cursor: pointer;" onclick="loadProject('${project.id}')">
+            <div class="card" style="margin-bottom: 10px; cursor: pointer; border: 1px solid var(--border-color);" onclick="loadProject('${project.id}')">
                 <h3>${project.title}</h3>
                 <p style="color: var(--text-secondary);">${project.description}</p>
-                <p><strong>Status:</strong> ${project.status}</p>
-                <p style="font-size: 0.9rem; color: var(--text-secondary);">Code: ${project.code}</p>
+                <p><strong>Status:</strong> ${project.status} &nbsp;|&nbsp; <strong>Code:</strong> ${project.code}</p>
             </div>
         `).join('');
-        
+
     } catch (error) {
         console.error('Error loading projects:', error);
         showAlert('Error loading projects: ' + error.message, 'error');
-        projectsList.innerHTML = '<p style="color: red; text-align: center;">Error loading projects. Check console for details.</p>'
-        }
-        
-        projectsList.innerHTML = projects.map(project => `
-            <div class="card" style="margin-bottom: 10px; cursor: pointer;" onclick="loadProject('${project.id}')">
-                <h3>${project.title}</h3>
-                <p style="color: var(--text-secondary);">${project.description}</p>
-                <p><strong>Status:</strong> ${project.status}</p>
-            </div>
-        `).join('');
-        
-    } catch (error) {
-        console.error('Error loading projects:', error);
-        showAlert('Error loading projects', 'error');
+        projectsList.innerHTML = '<p style="color: red; text-align: center;">Error loading projects. Check console for details.</p>';
     }
 }
 
 // Load specific project
 window.loadProject = async function(projectId) {
     currentProjectId = projectId;
-    
-    // Hide project selector
+
+    // Show project dashboard, hide selector
     document.getElementById('project-selector').classList.add('hidden');
     document.getElementById('project-dashboard').classList.remove('hidden');
-    
+
     // Set up real-time listener
     if (unsubscribeProject) {
         unsubscribeProject();
     }
-    
+
     unsubscribeProject = db.collection('projects').doc(projectId).onSnapshot((doc) => {
         if (doc.exists) {
             currentProject = { id: doc.id, ...doc.data() };
@@ -145,279 +149,202 @@ window.loadProject = async function(projectId) {
 // Render project data
 function renderProject() {
     const project = currentProject;
-    
-    // Update project header
+
     document.getElementById('project-title').textContent = project.title;
     document.getElementById('project-description').textContent = project.description;
     document.getElementById('project-code').textContent = project.code;
-    
-    // Update status badge
-    const statusBadge = document.getElementById('project-status-badge');
-    const statusMap = {
-        'setup': '⚙️ Setup',
-        'voting': '🗳️ Voting',
-        'active': '✅ Active'
-    };
-    statusBadge.textContent = statusMap[project.status] || project.status;
-    
-    // Check if user is creator
-    const isCreator = project.creatorId === currentUser.uid || 
-                      (project.members && project.members[currentUser.uid]?.role === 'creator');
-    
-    if (isCreator) {
+    document.getElementById('project-status-badge').textContent = project.status;
+
+    // Show Kanban button if project is active
+    if (project.status === 'active') {
+        document.getElementById('view-kanban-btn').style.display = 'inline-block';
+    }
+
+    // Show creator controls if user is creator
+    if (project.creatorId === currentUser.uid) {
         document.getElementById('creator-controls').style.display = 'block';
-        
-        // Show appropriate buttons based on status
+
         if (project.status === 'setup') {
             document.getElementById('launch-btn').style.display = 'inline-block';
             document.getElementById('finalize-voting-btn').style.display = 'none';
         } else if (project.status === 'voting') {
             document.getElementById('launch-btn').style.display = 'none';
             document.getElementById('finalize-voting-btn').style.display = 'inline-block';
-            updateVotingStatus();
-        } else {
-            document.getElementById('creator-controls').style.display = 'none';
         }
     }
-    
-    // Show voting section if project is in voting status
+
+    // Show voting section if project is in voting stage
     if (project.status === 'voting') {
-        const userVoted = project.votes && project.votes[currentUser.uid];
-        if (!userVoted) {
-            document.getElementById('voting-section').style.display = 'block';
-            renderVotingTodos();
-        } else {
-            document.getElementById('voting-section').innerHTML = `
-                <div class="alert alert-success">
-                    ✅ You have already submitted your priority votes!
-                </div>
-            `;
-            document.getElementById('voting-section').style.display = 'block';
-        }
-    } else {
-        document.getElementById('voting-section').style.display = 'none';
+        document.getElementById('voting-section').style.display = 'block';
+        renderVotingTodos();
     }
-    
-    // Show kanban button if project is active
-    if (project.status === 'active') {
-        document.getElementById('view-kanban-btn').style.display = 'inline-block';
-    }
-    
+
     // Render todos
     renderTodos();
-    
+
     // Render team members
     renderTeamMembers();
 }
 
-// Render todos
+// Render todos list
 function renderTodos() {
+    const container = document.getElementById('todos-container');
     const todos = currentProject.todos || [];
-    const todosContainer = document.getElementById('todos-container');
-    
-    if (todos.length === 0) {
-        todosContainer.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No tasks yet. Add one above!</p>';
-        return;
-    }
-    
-    todosContainer.innerHTML = `
-        <ul class="todo-list">
-            ${todos.map((todo, index) => `
-                <li class="todo-item">
-                    <div class="todo-content">
-                        <strong>${todo.text}</strong>
-                        <br>
-                        <small style="color: var(--text-secondary);">
-                            Added by: ${todo.createdBy || 'Unknown'}
-                            ${todo.priority ? ` | Priority: ${todo.priority}` : ''}
-                        </small>
-                    </div>
-                </li>
-            `).join('')}
-        </ul>
-    `;
-}
 
-// Add new todo
-window.addTodo = async function() {
-    const input = document.getElementById('new-todo-input');
-    const todoText = input.value.trim();
-    
-    if (!todoText) {
-        showAlert('Please enter a task', 'error');
+    if (todos.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">No tasks yet. Add some above!</p>';
         return;
     }
-    
-    try {
-        const userDoc = await db.collection('users').doc(currentUser.uid).get();
-        const userData = userDoc.data();
-        
-        await db.collection('projects').doc(currentProjectId).update({
-            todos: firebase.firestore.FieldValue.arrayUnion({
-                id: Date.now(),
-                text: todoText,
-                createdBy: userData.username,
-                createdAt: new Date().toISOString()
-            })
-        });
-        
-        input.value = '';
-        showAlert('Task added successfully!', 'success');
-        
-    } catch (error) {
-        console.error('Error adding todo:', error);
-        showAlert('Error adding task', 'error');
-    }
-};
+
+    container.innerHTML = todos.map((todo, index) => `
+        <div class="todo-item" style="display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--border-color);">
+            <div>
+                <span>${todo.text}</span>
+                ${todo.priorityScore ? `<span style="margin-left: 10px; font-size: 0.85rem; color: var(--primary-color);">Priority Score: ${todo.priorityScore}</span>` : ''}
+            </div>
+            <button class="btn btn-danger" style="padding: 5px 10px; font-size: 0.8rem;" onclick="removeTodo(${index})">Remove</button>
+        </div>
+    `).join('');
+}
 
 // Render voting todos
 function renderVotingTodos() {
+    const container = document.getElementById('voting-todos');
     const todos = currentProject.todos || [];
-    const votingTodos = document.getElementById('voting-todos');
-    
-    votingTodos.innerHTML = todos.map((todo, index) => `
-        <div class="todo-item" style="flex-direction: column; align-items: stretch;">
-            <div class="todo-content">${todo.text}</div>
-            <div style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
-                <label style="flex: 0 0 auto;">Points:</label>
-                <input 
-                    type="number" 
-                    min="0" 
-                    max="20" 
-                    value="${userVotes[index] || 0}" 
-                    onchange="updateVotePoints(${index}, this.value)"
-                    style="width: 80px; padding: 6px;">
-                <span style="color: var(--text-secondary); font-size: 0.9rem;">
-                    Current: ${userVotes[index] || 0} points
-                </span>
+
+    document.getElementById('points-remaining').textContent = pointsRemaining;
+
+    container.innerHTML = todos.map((todo, index) => `
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 12px; border-bottom: 1px solid var(--border-color);">
+            <span>${todo.text}</span>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button class="btn btn-secondary" style="padding: 5px 10px;" onclick="adjustVote(${index}, -1)">-</button>
+                <span style="min-width: 30px; text-align: center; font-weight: bold;">${userVotes[index] || 0}</span>
+                <button class="btn btn-primary" style="padding: 5px 10px;" onclick="adjustVote(${index}, 1)">+</button>
             </div>
         </div>
     `).join('');
 }
 
-// Update vote points
-window.updateVotePoints = function(todoIndex, points) {
-    points = parseInt(points) || 0;
-    
-    // Calculate current total
-    const currentTotal = Object.values(userVotes).reduce((sum, p) => sum + p, 0) - (userVotes[todoIndex] || 0);
-    
-    // Check if new total exceeds 20
-    if (currentTotal + points > 20) {
-        showAlert('You cannot assign more than 20 total points', 'error');
-        renderVotingTodos(); // Reset display
+// Render team members
+function renderTeamMembers() {
+    const container = document.getElementById('team-members-list');
+    const members = currentProject.teamMembers || [];
+
+    if (members.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-secondary);">No team members yet.</p>';
         return;
     }
-    
-    userVotes[todoIndex] = points;
-    pointsRemaining = 20 - (currentTotal + points);
-    
-    document.getElementById('points-remaining').textContent = pointsRemaining;
+
+    container.innerHTML = members.map(email => `
+        <span style="display: inline-block; background: var(--primary-light, #e8f0fe); color: var(--primary-color); padding: 4px 12px; border-radius: 20px; margin: 4px; font-size: 0.9rem;">${email}</span>
+    `).join('');
+}
+
+// Add todo
+window.addTodo = async function() {
+    const input = document.getElementById('new-todo-input');
+    const text = input.value.trim();
+    if (!text) return;
+
+    try {
+        const todos = currentProject.todos || [];
+        todos.push({ id: Date.now(), text: text, createdBy: currentUser.email });
+        await db.collection('projects').doc(currentProjectId).update({ todos: todos });
+        input.value = '';
+    } catch (error) {
+        showAlert('Error adding task: ' + error.message, 'error');
+    }
+};
+
+// Remove todo
+window.removeTodo = async function(index) {
+    try {
+        const todos = currentProject.todos || [];
+        todos.splice(index, 1);
+        await db.collection('projects').doc(currentProjectId).update({ todos: todos });
+    } catch (error) {
+        showAlert('Error removing task: ' + error.message, 'error');
+    }
+};
+
+// Adjust vote
+window.adjustVote = function(index, delta) {
+    const current = userVotes[index] || 0;
+    const newVal = current + delta;
+    const totalVoted = Object.values(userVotes).reduce((a, b) => a + b, 0);
+    const newTotal = totalVoted - current + newVal;
+
+    if (newVal < 0 || newTotal > 20) return;
+
+    userVotes[index] = newVal;
+    pointsRemaining = 20 - newTotal;
+    renderVotingTodos();
 };
 
 // Submit votes
 window.submitVotes = async function() {
-    const totalPoints = Object.values(userVotes).reduce((sum, p) => sum + p, 0);
-    
-    if (totalPoints !== 20) {
-        showAlert('You must assign exactly 20 points before submitting', 'error');
-        return;
-    }
-    
     try {
-        // Save votes
-        await db.collection('projects').doc(currentProjectId).update({
-            [`votes.${currentUser.uid}`]: userVotes
+        const votesRef = db.collection('projects').doc(currentProjectId)
+            .collection('votes').doc(currentUser.uid);
+
+        await votesRef.set({
+            votes: userVotes,
+            votedBy: currentUser.email,
+            votedAt: firebase.firestore.FieldValue.serverTimestamp()
         });
-        
+
         showAlert('Votes submitted successfully!', 'success');
-        
-        // Reload project to update UI
-        renderProject();
-        
     } catch (error) {
-        console.error('Error submitting votes:', error);
-        showAlert('Error submitting votes', 'error');
+        showAlert('Error submitting votes: ' + error.message, 'error');
     }
 };
 
-// Launch project (creator only)
+// Launch project for voting
 window.launchProject = async function() {
-    if (!confirm('Are you ready to launch this project for priority voting?')) {
-        return;
-    }
-    
     try {
-        await db.collection('projects').doc(currentProjectId).update({
-            status: 'voting',
-            launchedAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        
-        // Send email notifications to team members
-        const sendVotingNotification = functions.httpsCallable('sendVotingNotification');
-        await sendVotingNotification({
-            projectId: currentProjectId,
-            projectTitle: currentProject.title
-        });
-        
-        showAlert('Project launched! Team members have been notified to vote.', 'success');
-        
+        await db.collection('projects').doc(currentProjectId).update({ status: 'voting' });
+        showAlert('Project launched for voting!', 'success');
     } catch (error) {
-        console.error('Error launching project:', error);
-        showAlert('Error launching project', 'error');
+        showAlert('Error launching project: ' + error.message, 'error');
     }
 };
 
-// Update voting status (for creator)
-function updateVotingStatus() {
-    const votes = currentProject.votes || {};
-    const members = currentProject.members || {};
-    const totalMembers = Object.keys(members).length;
-    const votesReceived = Object.keys(votes).length;
-    
-    document.getElementById('voting-status').innerHTML = `
-        <div class="alert alert-info">
-            <strong>Voting Progress:</strong> ${votesReceived} of ${totalMembers} members have voted
-        </div>
-    `;
-}
-
-// Finalize voting and create Kanban board
+// Finalize voting and start project
 window.finalizeVoting = async function() {
-    const votes = currentProject.votes || {};
-    const members = currentProject.members || {};
-    
-    if (Object.keys(votes).length < Object.keys(members).length) {
-        if (!confirm('Not all team members have voted. Do you want to finalize anyway?')) {
-            return;
-        }
-    }
-    
     try {
-        // Calculate priority scores
+        // Get all votes
+        const votesSnapshot = await db.collection('projects').doc(currentProjectId)
+            .collection('votes').get();
+
         const todos = currentProject.todos || [];
-        const priorityScores = todos.map((todo, index) => {
-            const score = Object.values(votes).reduce((sum, userVote) => {
-                return sum + (userVote[index] || 0);
-            }, 0);
-            return { ...todo, priority: score, status: 'not-started' };
+        const scoreMap = {};
+
+        votesSnapshot.forEach(doc => {
+            const votes = doc.data().votes || {};
+            Object.entries(votes).forEach(([index, points]) => {
+                scoreMap[index] = (scoreMap[index] || 0) + points;
+            });
         });
-        
-        // Sort by priority (highest first)
-        priorityScores.sort((a, b) => b.priority - a.priority);
-        
-        // Update project
+
+        // Apply scores to todos
+        const scoredTodos = todos.map((todo, index) => ({
+            ...todo,
+            priorityScore: scoreMap[index] || 0
+        }));
+
+        // Sort by priority score descending
+        scoredTodos.sort((a, b) => b.priorityScore - a.priorityScore);
+
         await db.collection('projects').doc(currentProjectId).update({
+            todos: scoredTodos,
             status: 'active',
-            todos: priorityScores,
-            finalizedAt: firebase.firestore.FieldValue.serverTimestamp()
+            votingComplete: true
         });
-        
+
         showAlert('Voting finalized! Project is now active.', 'success');
-        
     } catch (error) {
-        console.error('Error finalizing voting:', error);
-        showAlert('Error finalizing voting', 'error');
+        showAlert('Error finalizing voting: ' + error.message, 'error');
     }
 };
 
@@ -426,40 +353,4 @@ window.viewKanban = function() {
     window.location.href = `kanban.html?projectId=${currentProjectId}`;
 };
 
-// Render team members
-function renderTeamMembers() {
-    const members = currentProject.members || {};
-    const teamMembersList = document.getElementById('team-members-list');
-    
-    const memberCount = Object.keys(members).length;
-    
-    if (memberCount === 0) {
-        teamMembersList.innerHTML = '<p style="color: var(--text-secondary);">No team members yet.</p>';
-        return;
-    }
-    
-    teamMembersList.innerHTML = `
-        <ul style="list-style: none;">
-            ${Object.values(members).map(member => `
-                <li style="padding: 10px; border-bottom: 1px solid var(--border-color);">
-                    <strong>${member.username}</strong>
-                    <span style="color: var(--text-secondary);"> (${member.email})</span>
-                    ${member.role === 'creator' ? '<span style="color: var(--primary-color); font-weight: 600;"> - Creator</span>' : ''}
-                </li>
-            `).join('')}
-        </ul>
-    `;
-}
-
-// Logout
-window.logout = async function() {
-    await auth.signOut();
-    window.location.href = 'index.html';
-};
-
-// Allow Enter key to add todo
-document.getElementById('new-todo-input').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        addTodo();
-    }
-});
+console.log('Dashboard.js loaded');
