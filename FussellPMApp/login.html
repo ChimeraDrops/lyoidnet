@@ -48,6 +48,7 @@
                 <div class="text-center mt-20">
                     <p>Don't have an account? <a href="join-project.html" style="color: var(--primary-color);">Join a project</a></p>
                     <p><a href="index.html" style="color: var(--text-secondary);">Back to Home</a></p>
+                    <p><a href="#" id="logout-link" style="color: var(--text-secondary); display: none;">Logout (if already signed in)</a></p>
                 </div>
             </div>
 
@@ -68,22 +69,43 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
     <script type="module" src="auth.js"></script>
-    <script type="module">
-        // Check if already logged in (after auth.js initializes Firebase)
-        setTimeout(() => {
-            if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
-                const auth = firebase.auth();
+    <scrimport firebaseConfig from './firebase-config.js';
+        
+        // Initialize Firebase and check auth status
+        let auth = null;
+        try {
+            if (typeof firebase !== 'undefined') {
+                if (firebase.apps.length === 0) {
+                    firebase.initializeApp(firebaseConfig);
+                }
+                auth = firebase.auth();
+                
+                // Show logout link if user is logged in
                 auth.onAuthStateChanged(user => {
                     if (user) {
-                        // Already logged in, redirect
-                        const urlParams = new URLSearchParams(window.location.search);
-                        const redirect = urlParams.get('redirect');
-                        window.location.href = redirect || 'dashboard.html';
+                        document.getElementById('logout-link').style.display = 'block';
                     }
                 });
             }
-        }, 100);
+        } catch (error) {
+            console.error('Firebase init error:', error);
+        }
         
+        // Logout handler
+        document.getElementById('logout-link').addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (auth) {
+                try {
+                    await auth.signOut();
+                    alert('Logged out successfully');
+                    location.reload();
+                } catch (error) {
+                    console.error('Logout error:', error);
+                }
+            }
+        });
+        
+        ipt type="module">
         // Show alert function
         function showAlert(message, type = 'info') {
             const alertContainer = document.getElementById('alert-container');
