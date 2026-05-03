@@ -1,0 +1,32 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Users collection - allow read for username lookup, write only to own document
+    match /users/{userId} {
+      // Anyone can read (needed for username lookup during login)
+      allow read: if true;
+      
+      // Only authenticated users can write to their own document
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Projects collection
+    match /projects/{projectId} {
+      // Anyone can read (needed for joining projects by code)
+      allow read: if true;
+      
+      // Only authenticated users can create projects
+      allow create: if request.auth != null;
+      
+      // Only creator or team members can update
+      allow update: if request.auth != null && (
+        request.auth.uid == resource.data.creatorId ||
+        request.auth.email in resource.data.teamMembers
+      );
+      
+      // Only creator can delete
+      allow delete: if request.auth != null && request.auth.uid == resource.data.creatorId;
+    }
+  }
+}
