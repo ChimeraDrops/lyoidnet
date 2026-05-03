@@ -69,7 +69,8 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
     <script type="module" src="auth.js"></script>
-    <scrimport firebaseConfig from './firebase-config.js';
+    <script type="module">
+        import firebaseConfig from './firebase-config.js';
         
         // Initialize Firebase and check auth status
         let auth = null;
@@ -105,7 +106,6 @@
             }
         });
         
-        ipt type="module">
         // Show alert function
         function showAlert(message, type = 'info') {
             const alertContainer = document.getElementById('alert-container');
