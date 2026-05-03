@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanban Board - Fussell PM</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+            <div>
+                <h1 id="project-title">Kanban Board</h1>
+                <p class="tagline" id="project-description"></p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-secondary" onclick="window.location.href='dashboard.html?projectId=' + currentProjectId">
+                    Back to Dashboard
+                </button>
+                <button class="btn btn-secondary" onclick="logout()">Logout</button>
+            </div>
+        </header>
+
+        <main>
+            <div id="alert-container"></div>
+
+            <!-- Filters and Actions -->
+            <div class="card mb-20" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+                <div>
+                    <label style="margin-right: 10px;"><strong>Filter by Assignee:</strong></label>
+                    <select id="assignee-filter" onchange="filterTasks()" style="padding: 8px; border-radius: 6px; border: 1px solid var(--border-color);">
+                        <option value="all">All Tasks</option>
+                    </select>
+                </div>
+                <div>
+                    <button class="btn btn-primary" onclick="showTaskModal()">+ Add Task</button>
+                </div>
+            </div>
+
+            <!-- Kanban Board -->
+            <div class="kanban-board" id="kanban-board">
+                <!-- Columns will be generated dynamically -->
+            </div>
+        </main>
+
+        <footer style="margin-top: 40px;">
+            <p>&copy; 2026 Fussell PM. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- Task Detail Modal -->
+    <div id="task-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-title">Task Details</h2>
+                <span class="modal-close" onclick="closeTaskModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="task-title">Task Title</label>
+                    <input type="text" id="task-title" placeholder="Enter task title">
+                </div>
+                
+                <div class="form-group">
+                    <label for="task-description">Description</label>
+                    <textarea id="task-description" placeholder="Enter task description"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="task-assignee">Assign To</label>
+                    <select id="task-assignee">
+                        <option value="">Unassigned</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="task-status">Status</label>
+                    <select id="task-status">
+                        <option value="not-started">Not Started</option>
+                        <option value="leader-assigned">Leader Assigned</option>
+                        <option value="started-no-issue">Started No Issue</option>
+                        <option value="need-resources">Need Resources</option>
+                        <option value="underway">Underway</option>
+                        <option value="out-for-approval">Out for Approval</option>
+                        <option value="closing">Closing</option>
+                        <option value="done">Done</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Priority Score</label>
+                    <input type="text" id="task-priority" readonly style="background: #f3f4f6;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeTaskModal()">Cancel</button>
+                <button class="btn btn-success" onclick="saveTask()" id="save-task-btn">Save</button>
+                <button class="btn btn-danger" onclick="deleteTask()" id="delete-task-btn" style="display: none;">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <script type="module" src="kanban.js"></script>
+    
+    <style>
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .modal-header h2 {
+            margin: 0;
+        }
+        
+        .modal-close {
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--text-secondary);
+        }
+        
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+        
+        .modal-body {
+            padding: 20px;
+        }
+        
+        .modal-footer {
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        
+        /* Drag and Drop Styles */
+        .kanban-card.dragging {
+            opacity: 0.5;
+        }
+        
+        .kanban-column.drag-over {
+            background: #e0e7ff;
+        }
+    </style>
+</body>
+</html>

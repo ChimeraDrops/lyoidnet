@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create New Project - Fussell PM</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Create New Project</h1>
+            <p class="tagline">Set up your project and invite your team</p>
+        </header>
+
+        <main>
+            <div id="alert-container"></div>
+
+            <form id="create-project-form">
+                <!-- Project Title -->
+                <div class="form-group">
+                    <label for="project-title">Project Title *</label>
+                    <input 
+                        type="text" 
+                        id="project-title" 
+                        name="title" 
+                        required 
+                        placeholder="Enter project title">
+                </div>
+
+                <!-- Project Description -->
+                <div class="form-group">
+                    <label for="project-description">Project Description *</label>
+                    <textarea 
+                        id="project-description" 
+                        name="description" 
+                        required 
+                        placeholder="Describe the project goals and scope"></textarea>
+                    <small>Provide a clear description to help team members understand the project</small>
+                </div>
+
+                <!-- Initial To-Do Items -->
+                <div class="form-group">
+                    <label for="todo-input">Initial To-Do Items</label>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input 
+                            type="text" 
+                            id="todo-input" 
+                            placeholder="Enter a task and press Enter or click Add">
+                        <button type="button" class="btn btn-secondary" onclick="addTodo()">Add</button>
+                    </div>
+                    <small>Add initial tasks that you know need to be done</small>
+                    
+                    <ul id="todo-list" class="todo-list mt-20">
+                        <!-- To-do items will be added here dynamically -->
+                    </ul>
+                </div>
+
+                <!-- Team Member Emails -->
+                <div class="form-group">
+                    <label for="email-input">Team Member Emails *</label>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input 
+                            type="email" 
+                            id="email-input" 
+                            placeholder="Enter email and press Enter or click Add">
+                        <button type="button" class="btn btn-secondary" onclick="addEmail()">Add</button>
+                    </div>
+                    <small>Team members will receive an invitation email to join the project</small>
+                    
+                    <div id="email-tags" class="email-tags-container mt-20">
+                        <!-- Email tags will be added here dynamically -->
+                    </div>
+                </div>
+
+                <!-- Creator Email (Hidden, will be set from auth) -->
+                <input type="hidden" id="creator-email" name="creatorEmail">
+
+                <!-- Submit Button -->
+                <div class="text-center mt-20">
+                    <button type="button" class="btn btn-primary" onclick="window.location.href='index.html'" style="margin-right: 10px;">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-success" id="submit-btn">
+                        Create Project & Send Invitations
+                    </button>
+                </div>
+            </form>
+
+            <div id="loading" class="loading hidden">
+                <div class="spinner"></div>
+                <p>Creating project and sending invitations...</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 Fussell PM. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-functions-compat.js"></script>
+    
+    <script type="module" src="create-project.js"></script>
+</body>
+</html>

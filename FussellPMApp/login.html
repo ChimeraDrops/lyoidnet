@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Fussell PM</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Login</h1>
+            <p class="tagline">Access your projects</p>
+        </header>
+
+        <main>
+            <div id="alert-container"></div>
+
+            <div class="card" style="max-width: 500px; margin: 0 auto;">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            name="username" 
+                            required 
+                            placeholder="Enter your username">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            required 
+                            placeholder="Enter your password">
+                    </div>
+
+                    <div class="text-center mt-20">
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            Login
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-20">
+                    <p>Don't have an account? <a href="join-project.html" style="color: var(--primary-color);">Join a project</a></p>
+                    <p><a href="index.html" style="color: var(--text-secondary);">Back to Home</a></p>
+                </div>
+            </div>
+
+            <div id="loading" class="loading hidden">
+                <div class="spinner"></div>
+                <p>Logging in...</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 Fussell PM. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    
+    <script type="module" src="auth.js"></script>
+    <script>
+        // Handle login on this page
+        import('./auth.js').then(module => {
+            document.getElementById('login-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const username = document.getElementById('username').value.trim();
+                const password = document.getElementById('password').value;
+                
+                // Show loading
+                document.getElementById('login-form').parentElement.classList.add('hidden');
+                document.getElementById('loading').classList.remove('hidden');
+                
+                try {
+                    await module.login(username, password);
+                    // Redirect handled in auth.js
+                } catch (error) {
+                    document.getElementById('login-form').parentElement.classList.remove('hidden');
+                    document.getElementById('loading').classList.add('hidden');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

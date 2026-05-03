@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fussell PM - Project Management App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Fussell PM</h1>
+            <p class="tagline">Collaborative Project Management Made Simple</p>
+        </header>
+
+        <main class="landing-page">
+            <div class="action-cards">
+                <div class="card">
+                    <div class="card-icon">🚀</div>
+                    <h2>Start New Project</h2>
+                    <p>Create a new project, invite team members, and start collaborating</p>
+                    <button class="btn btn-primary" onclick="window.location.href='create-project.html'">
+                        Create Project
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-icon">📋</div>
+                    <h2>Explore Existing Projects</h2>
+                    <p>View and manage your ongoing projects</p>
+                    <button class="btn btn-secondary" onclick="window.location.href='login.html'">
+                        Login to Dashboard
+                    </button>
+                </div>
+            </div>
+
+            <div class="features">
+                <h3>Features</h3>
+                <ul>
+                    <li>✓ Real-time collaborative Kanban boards</li>
+                    <li>✓ Priority-based task management</li>
+                    <li>✓ Team member invitations</li>
+                    <li>✓ Multi-stage workflow tracking</li>
+                </ul>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 Fussell PM. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script type="module" src="firebase-config.js"></script>
+</body>
+</html>
