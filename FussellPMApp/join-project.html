@@ -10,133 +10,34 @@
     <div class="container">
         <header>
             <h1>Join Project</h1>
-            <p class="tagline">Enter your project code and create your account</p>
+            <p class="tagline">Enter a project code to join</p>
         </header>
 
         <main>
             <div id="alert-container"></div>
 
-            <div class="card" style="max-width: 600px; margin: 0 auto;">
-                <!-- Step 1: Enter Project Code -->
-                <div id="code-step">
-                    <h2>Step 1: Enter Project Code</h2>
-                    <p class="mb-20" style="color: var(--text-secondary);">
-                        Enter the project code from your invitation email
+            <div class="card" style="max-width: 500px; margin: 0 auto;">
+                <div id="auth-loading" class="loading">
+                    <div class="spinner"></div>
+                    <p>Checking authentication...</p>
+                </div>
+
+                <div id="join-form" style="display:none;">
+                    <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                        Logged in as <strong id="user-email-display"></strong>
                     </p>
-                    
+
                     <div class="form-group">
                         <label for="project-code">Project Code</label>
-                        <input 
-                            type="text" 
-                            id="project-code" 
-                            placeholder="e.g., ABC123" 
-                            style="text-transform: uppercase;">
-                    </div>
-                    
-                    <button class="btn btn-primary" onclick="verifyCode()" style="width: 100%;">
-                        Verify Code
-                    </button>
-                </div>
-
-                <!-- Step 2: Create Account or Login -->
-                <div id="auth-step" class="hidden">
-                    <h2>Step 2: Create Account or Login</h2>
-                    <div id="project-info" class="mb-20"></div>
-                    
-                    <div style="display: flex; gap: 20px; margin-bottom: 20px;">
-                        <button 
-                            class="btn btn-primary" 
-                            id="create-account-btn" 
-                            onclick="showCreateAccount()" 
-                            style="flex: 1;">
-                            Create Account
-                        </button>
-                        <button 
-                            class="btn btn-secondary" 
-                            id="existing-login-btn" 
-                            onclick="showExistingLogin()" 
-                            style="flex: 1;">
-                            I Have an Account
-                        </button>
+                        <input type="text" id="project-code" placeholder="e.g., ABC123" style="text-transform: uppercase; letter-spacing: 3px; font-size: 1.2rem; text-align: center;">
                     </div>
 
-                    <!-- Create Account Form -->
-                    <form id="create-account-form" class="hidden">
-                        <div class="form-group">
-                            <label for="new-username">Username *</label>
-                            <input 
-                                type="text" 
-                                id="new-username" 
-                                required 
-                                placeholder="Choose a username">
-                        </div>
+                    <button class="btn btn-primary" id="join-btn" style="width: 100%;">Join Project</button>
 
-                        <div class="form-group">
-                            <label for="new-email">Email *</label>
-                            <input 
-                                type="email" 
-                                id="new-email" 
-                                required 
-                                placeholder="Your email address">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="new-password">Password *</label>
-                            <input 
-                                type="password" 
-                                id="new-password" 
-                                required 
-                                placeholder="Choose a password (min 6 characters)">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="confirm-password">Confirm Password *</label>
-                            <input 
-                                type="password" 
-                                id="confirm-password" 
-                                required 
-                                placeholder="Re-enter your password">
-                        </div>
-
-                        <button type="submit" class="btn btn-success" style="width: 100%;">
-                            Create Account & Join Project
-                        </button>
-                    </form>
-
-                    <!-- Existing Login Form -->
-                    <form id="existing-login-form" class="hidden">
-                        <div class="form-group">
-                            <label for="existing-username">Username</label>
-                            <input 
-                                type="text" 
-                                id="existing-username" 
-                                required 
-                                placeholder="Enter your username">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="existing-password">Password</label>
-                            <input 
-                                type="password" 
-                                id="existing-password" 
-                                required 
-                                placeholder="Enter your password">
-                        </div>
-
-                        <button type="submit" class="btn btn-success" style="width: 100%;">
-                            Login & Join Project
-                        </button>
-                    </form>
+                    <div class="text-center mt-20">
+                        <a href="dashboard.html" style="color: var(--text-secondary);">Back to Dashboard</a>
+                    </div>
                 </div>
-
-                <div class="text-center mt-20">
-                    <p><a href="index.html" style="color: var(--text-secondary);">Back to Home</a></p>
-                </div>
-            </div>
-
-            <div id="loading" class="loading hidden">
-                <div class="spinner"></div>
-                <p id="loading-message">Processing...</p>
             </div>
         </main>
 
@@ -145,11 +46,10 @@
         </footer>
     </div>
 
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    
-    <script type="module" src="join-project.js"></script>
+
+    <script type="module" src="join-project.js?v=1"></script>
 </body>
 </html>

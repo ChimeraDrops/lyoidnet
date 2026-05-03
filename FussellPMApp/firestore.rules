@@ -19,10 +19,12 @@ service cloud.firestore {
       // Only authenticated users can create projects
       allow create: if request.auth != null;
       
-      // Only creator or team members can update
+      // Only creator or team members can update;
+      // OR any authenticated user can update if the result keeps them in teamMembers (joining)
       allow update: if request.auth != null && (
         request.auth.uid == resource.data.creatorId ||
-        request.auth.email in resource.data.teamMembers
+        request.auth.email in resource.data.teamMembers ||
+        request.auth.email in request.resource.data.teamMembers
       );
       
       // Only creator can delete

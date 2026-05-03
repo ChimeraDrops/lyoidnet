@@ -82,6 +82,20 @@ function renderKanbanBoard() {
     // Update header
     document.getElementById('project-title').textContent = currentProject.title;
     document.getElementById('project-description').textContent = currentProject.description;
+    const codeEl = document.getElementById('project-code');
+    if (codeEl) codeEl.textContent = currentProject.code || '';
+
+    const copyBtn = document.getElementById('copy-code-btn');
+    if (copyBtn && !copyBtn.dataset.bound) {
+        copyBtn.dataset.bound = '1';
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(currentProject.code || '').then(() => {
+                showAlert('Project code copied!', 'success');
+            }).catch(() => {
+                showAlert('Code: ' + (currentProject.code || ''), 'info');
+            });
+        });
+    }
     
     const kanbanBoard = document.getElementById('kanban-board');
     

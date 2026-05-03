@@ -10,9 +10,8 @@
     <div class="container">
         <header style="position: relative;">
             <h1>Create New Project</h1>
-            <p class="tagline">Set up your project and invite your team</p>
-            
-            <!-- User Info -->
+            <p class="tagline">Set up your project and share the code with your team</p>
+
             <div id="user-info" class="hidden" style="position: absolute; top: 10px; right: 10px; text-align: right;">
                 <span id="user-email" style="color: var(--text-secondary); font-size: 0.9rem;"></span>
                 <button id="logout-btn" class="btn btn-secondary" style="margin-left: 10px; padding: 5px 15px; font-size: 0.85rem;">Logout</button>
@@ -21,86 +20,56 @@
 
         <main>
             <div id="alert-container"></div>
-            
+
             <div id="auth-loading" class="loading">
                 <div class="spinner"></div>
                 <p>Checking authentication...</p>
             </div>
 
-            <form id="create-project-form">
-                <!-- Project Title -->
+            <form id="create-project-form" style="display:none;">
                 <div class="form-group">
                     <label for="project-title">Project Title *</label>
-                    <input 
-                        type="text" 
-                        id="project-title" 
-                        name="title" 
-                        required 
-                        placeholder="Enter project title">
+                    <input type="text" id="project-title" name="title" required placeholder="Enter project title">
                 </div>
 
-                <!-- Project Description -->
                 <div class="form-group">
                     <label for="project-description">Project Description *</label>
-                    <textarea 
-                        id="project-description" 
-                        name="description" 
-                        required 
-                        placeholder="Describe the project goals and scope"></textarea>
+                    <textarea id="project-description" name="description" required placeholder="Describe the project goals and scope"></textarea>
                     <small>Provide a clear description to help team members understand the project</small>
                 </div>
 
-                <!-- Initial To-Do Items -->
                 <div class="form-group">
                     <label for="todo-input">Initial To-Do Items</label>
                     <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                        <input 
-                            type="text" 
-                            id="todo-input" 
-                            placeholder="Enter a task and press Enter or click Add">
+                        <input type="text" id="todo-input" placeholder="Enter a task and press Enter or click Add">
                         <button type="button" class="btn btn-secondary" id="add-todo-btn">Add</button>
                     </div>
-                    <small>Add initial tasks that you know need to be done</small>
-                    
-                    <ul id="todo-list" class="todo-list mt-20">
-                        <!-- To-do items will be added here dynamically -->
-                    </ul>
+                    <small>Add initial tasks. More can be added later from the dashboard.</small>
+
+                    <ul id="todo-list" class="todo-list mt-20"></ul>
                 </div>
 
-                <!-- Team Member Emails -->
-                <div class="form-group">
-                    <label for="email-input">Team Member Emails *</label>
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                        <input 
-                            type="email" 
-                            id="email-input" 
-                            placeholder="Enter email and press Enter or click Add">
-                        <button type="button" class="btn btn-secondary" id="add-email-btn">Add</button>
-                    </div>
-                    <small>Team members will receive an invitation email to join the project</small>
-                    
-                    <div id="email-tags" class="email-tags-container mt-20">
-                        <!-- Email tags will be added here dynamically -->
-                    </div>
-                </div>
-
-                <!-- Creator Email (Hidden, will be set from auth) -->
-                <input type="hidden" id="creator-email" name="creatorEmail">
-
-                <!-- Submit Button -->
                 <div class="text-center mt-20">
-                    <button type="button" class="btn btn-primary" onclick="window.location.href='index.html'" style="margin-right: 10px;">
+                    <button type="button" class="btn btn-secondary" onclick="window.location.href='dashboard.html'" style="margin-right: 10px;">
                         Cancel
                     </button>
-                    <button type="submit" class="btn btn-success" id="submit-btn">
-                        Create Project & Send Invitations
-                    </button>
+                    <button type="submit" class="btn btn-success" id="submit-btn">Create Project</button>
                 </div>
             </form>
 
             <div id="loading" class="loading hidden">
                 <div class="spinner"></div>
-                <p>Creating project and sending invitations...</p>
+                <p>Creating project...</p>
+            </div>
+
+            <div id="success-screen" class="hidden">
+                <div class="card text-center" style="max-width: 600px; margin: 40px auto;">
+                    <h2 style="color: var(--success-color, #10b981);">Project Created!</h2>
+                    <p style="color: var(--text-secondary);">Share this code with anyone you want to invite:</p>
+                    <div id="success-code" style="font-size: 3rem; font-weight: bold; letter-spacing: 6px; color: var(--primary-color); background: #f3f4f6; padding: 20px; border-radius: 12px; margin: 20px 0;"></div>
+                    <button class="btn btn-secondary" id="copy-code-btn" style="margin-right: 10px;">Copy Code</button>
+                    <button class="btn btn-primary" id="go-dashboard-btn">Go to Project Dashboard</button>
+                </div>
             </div>
         </main>
 
@@ -109,12 +78,10 @@
         </footer>
     </div>
 
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-functions-compat.js"></script>
-    
-    <script type="module" src="create-project.js?v=3"></script>
+
+    <script type="module" src="create-project.js?v=4"></script>
 </body>
 </html>

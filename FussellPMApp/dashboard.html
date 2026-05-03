@@ -23,8 +23,14 @@
 
             <!-- Project Selector (if user has multiple projects) -->
             <div id="project-selector" class="card mb-20">
-                <h2>Select Project</h2>
-                <div id="projects-list"></div>
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <h2 style="margin: 0;">My Projects</h2>
+                    <div style="display: flex; gap: 10px;">
+                        <button class="btn btn-success" onclick="window.location.href='join-project.html'">+ Join Project</button>
+                        <button class="btn btn-primary" onclick="window.location.href='create-project.html'">+ New Project</button>
+                    </div>
+                </div>
+                <div id="projects-list" class="mt-20"></div>
             </div>
 
             <!-- Project Dashboard -->
@@ -32,12 +38,16 @@
                 <button class="btn btn-secondary mb-20" onclick="backToProjects()">&larr; Back to All Projects</button>
                 <!-- Project Header -->
                 <div class="card mb-20">
-                    <div style="display: flex; justify-content: space-between; align-items: start;">
-                        <div>
+                    <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 15px;">
+                        <div style="flex: 1; min-width: 250px;">
                             <h2 id="project-title">Project Title</h2>
                             <p id="project-description" style="color: var(--text-secondary);"></p>
-                            <p><strong>Project Code:</strong> <span id="project-code"></span></p>
                             <p><strong>Status:</strong> <span id="project-status-badge"></span></p>
+                        </div>
+                        <div style="text-align: center;">
+                            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 4px;">Project Code (share to invite)</div>
+                            <div id="project-code" style="font-size: 1.8rem; font-weight: bold; letter-spacing: 4px; color: var(--primary-color); background: #f3f4f6; padding: 10px 20px; border-radius: 8px;"></div>
+                            <button class="btn btn-secondary" id="copy-code-btn" style="margin-top: 8px; padding: 6px 14px; font-size: 0.85rem;">Copy Code</button>
                         </div>
                         <div>
                             <button class="btn btn-primary" onclick="viewKanban()" id="view-kanban-btn" style="display: none;">
@@ -135,6 +145,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-functions-compat.js"></script>
     
-    <script type="module" src="dashboard.js?v=5"></script>
+    <script type="module" src="dashboard.js?v=6"></script>
 </body>
 </html>

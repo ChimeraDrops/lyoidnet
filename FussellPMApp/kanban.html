@@ -8,10 +8,15 @@
 </head>
 <body>
     <div class="container">
-        <header style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap;">
+        <header style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
             <div>
                 <h1 id="project-title">Kanban Board</h1>
                 <p class="tagline" id="project-description"></p>
+            </div>
+            <div style="text-align: center;">
+                <div style="font-size: 0.8rem; color: rgba(255,255,255,0.85);">Project Code</div>
+                <div id="project-code" style="font-size: 1.4rem; font-weight: bold; letter-spacing: 3px; background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 6px; color: #fff;"></div>
+                <button class="btn btn-secondary" id="copy-code-btn" style="margin-top: 6px; padding: 4px 12px; font-size: 0.8rem;">Copy</button>
             </div>
             <div style="display: flex; gap: 10px;">
                 <button class="btn btn-secondary" onclick="window.location.href='dashboard.html?projectId=' + currentProjectId">
@@ -105,7 +110,7 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
-    <script type="module" src="kanban.js"></script>
+    <script type="module" src="kanban.js?v=2"></script>
     
     <style>
         /* Modal Styles */

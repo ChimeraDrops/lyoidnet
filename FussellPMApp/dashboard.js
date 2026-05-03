@@ -106,15 +106,21 @@ async function loadUserProjects() {
         const projects = Array.from(projectsMap.values());
 
         if (projects.length === 0) {
-            projectsList.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">No projects found. <a href="create-project.html">Create a new project</a> to get started!</p>';
+            projectsList.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">No projects yet. Create one or join with a code!</p>';
             return;
         }
 
         projectsList.innerHTML = projects.map(project => `
-            <div class="card" style="margin-bottom: 10px; cursor: pointer; border: 1px solid var(--border-color);" onclick="loadProject('${project.id}')">
-                <h3>${project.title}</h3>
-                <p style="color: var(--text-secondary);">${project.description}</p>
-                <p><strong>Status:</strong> ${project.status} &nbsp;|&nbsp; <strong>Code:</strong> ${project.code}</p>
+            <div class="card" style="margin-bottom: 10px; cursor: pointer; border: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; gap: 15px;" onclick="loadProject('${project.id}')">
+                <div style="flex: 1;">
+                    <h3 style="margin: 0 0 6px 0;">${project.title}</h3>
+                    <p style="color: var(--text-secondary); margin: 0 0 6px 0;">${project.description}</p>
+                    <p style="margin: 0;"><strong>Status:</strong> ${project.status}</p>
+                </div>
+                <div style="text-align: center;">
+                    <div style="font-size: 0.75rem; color: var(--text-secondary);">CODE</div>
+                    <div style="font-size: 1.3rem; font-weight: bold; letter-spacing: 2px; color: var(--primary-color);">${project.code}</div>
+                </div>
             </div>
         `).join('');
 
@@ -154,6 +160,19 @@ function renderProject() {
     document.getElementById('project-description').textContent = project.description;
     document.getElementById('project-code').textContent = project.code;
     document.getElementById('project-status-badge').textContent = project.status;
+
+    // Wire up copy button (idempotent)
+    const copyBtn = document.getElementById('copy-code-btn');
+    if (copyBtn && !copyBtn.dataset.bound) {
+        copyBtn.dataset.bound = '1';
+        copyBtn.addEventListener('click', () => {
+            navigator.clipboard.writeText(currentProject.code).then(() => {
+                showAlert('Project code copied to clipboard!', 'success');
+            }).catch(() => {
+                showAlert('Code: ' + currentProject.code, 'info');
+            });
+        });
+    }
 
     // Show Kanban button if project is active
     if (project.status === 'active') {
