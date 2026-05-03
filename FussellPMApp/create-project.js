@@ -339,7 +339,10 @@ document.getElementById('create-project-form').addEventListener('submit', async 
             launched: false
         });
         
+        console.log('Project created successfully:', projectRef.id);
+        
         // Call Cloud Function to send invitation emails (if deployed)
+        let emailsSent = false;
         try {
             const sendInvitations = functions.httpsCallable('sendProjectInvitations');
             await sendInvitations({
@@ -349,17 +352,24 @@ document.getElementById('create-project-form').addEventListener('submit', async 
                 teamEmails: teamEmails,
                 creatorEmail: currentUser.email
             });
+            emailsSent = true;
+            console.log('Email invitations sent successfully');
         } catch (emailError) {
-            console.warn('Email notifications not sent (Cloud Functions may not be deployed):', emailError);
+            console.warn('Email notifications not sent (Cloud Functions not deployed):', emailError);
             // Continue anyway - emails are optional
         }
         
-        showAlert('Project created successfully! Invitations sent.', 'success');
+        // Show appropriate success message
+        if (emailsSent) {
+            showAlert('Project created successfully! Invitations sent.', 'success');
+        } else {
+            showAlert(`Project created successfully! Project Code: ${projectCode}. Share this code with team members to join.`, 'success');
+        }
         
-        // Redirect to creator dashboard after 2 seconds
+        // Redirect to creator dashboard after 3 seconds
         setTimeout(() => {
             window.location.href = `dashboard.html?projectId=${projectRef.id}&role=creator`;
-        }, 2000);
+        }, 3000);
         
     } catch (error) {
         console.error('Error creating project:', error);
