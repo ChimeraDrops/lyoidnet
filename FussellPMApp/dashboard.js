@@ -1,5 +1,6 @@
 // Dashboard Logic
 import firebaseConfig from './firebase-config.js';
+import { getTemplatesForType, PROJECT_TYPES } from './templates-config.js';
 
 // Initialize Firebase
 try {
@@ -161,6 +162,16 @@ function renderProject() {
     document.getElementById('project-code').textContent = project.code;
     document.getElementById('project-status-badge').textContent = project.status;
 
+    // Project type badge
+    const typeBadge = document.getElementById('project-type-badge');
+    if (typeBadge) {
+        const typeInfo = PROJECT_TYPES[project.type] || PROJECT_TYPES.predictive;
+        typeBadge.textContent = `${typeInfo.icon} ${typeInfo.name}`;
+    }
+
+    // Render template links for this project type
+    renderTemplatesGrid(project.type || 'predictive');
+
     // Wire up copy button (idempotent)
     const copyBtn = document.getElementById('copy-code-btn');
     if (copyBtn && !copyBtn.dataset.bound) {
@@ -257,6 +268,27 @@ function renderTeamMembers() {
 
     container.innerHTML = members.map(email => `
         <span style="display: inline-block; background: var(--primary-light, #e8f0fe); color: var(--primary-color); padding: 4px 12px; border-radius: 20px; margin: 4px; font-size: 0.9rem;">${email}</span>
+    `).join('');
+}
+
+// Render PMBOK templates grid
+function renderTemplatesGrid(projectType) {
+    const grid = document.getElementById('templates-grid');
+    if (!grid) return;
+    const templates = getTemplatesForType(projectType);
+    if (templates.length === 0) {
+        grid.innerHTML = '<p style="color: var(--text-secondary);">No templates available for this project type.</p>';
+        return;
+    }
+    grid.innerHTML = templates.map(tpl => `
+        <a href="template.html?projectId=${currentProjectId}&templateId=${tpl.id}"
+           style="text-decoration: none; color: inherit; display: block; border: 1px solid var(--border-color, #e5e7eb); border-radius: 10px; padding: 14px; background: #fff; transition: transform 0.15s, box-shadow 0.15s;"
+           onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.08)';"
+           onmouseout="this.style.transform=''; this.style.boxShadow='';">
+            <div style="font-size: 1.6rem; margin-bottom: 6px;">${tpl.icon || '📄'}</div>
+            <div style="font-weight: 600; margin-bottom: 4px;">${tpl.name}</div>
+            <div style="font-size: 0.8rem; color: #6b7280; line-height: 1.3;">${tpl.description}</div>
+        </a>
     `).join('');
 }
 
@@ -416,6 +448,12 @@ window.confirmDeleteProject = async function() {
             .collection('votes').get();
         const deleteVotes = votesSnapshot.docs.map(d => d.ref.delete());
         await Promise.all(deleteVotes);
+
+        // Delete templates subcollection docs
+        const templatesSnapshot = await db.collection('projects').doc(currentProjectId)
+            .collection('templates').get();
+        const deleteTemplates = templatesSnapshot.docs.map(d => d.ref.delete());
+        await Promise.all(deleteTemplates);
 
         // Delete the project document
         await db.collection('projects').doc(currentProjectId).delete();

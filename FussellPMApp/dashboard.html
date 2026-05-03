@@ -42,7 +42,7 @@
                         <div style="flex: 1; min-width: 250px;">
                             <h2 id="project-title">Project Title</h2>
                             <p id="project-description" style="color: var(--text-secondary);"></p>
-                            <p><strong>Status:</strong> <span id="project-status-badge"></span></p>
+                            <p><strong>Type:</strong> <span id="project-type-badge"></span> &nbsp;|&nbsp; <strong>Status:</strong> <span id="project-status-badge"></span></p>
                         </div>
                         <div style="text-align: center;">
                             <div style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 4px;">Project Code (share to invite)</div>
@@ -72,6 +72,13 @@
                         </button>
                     </div>
                     <div id="voting-status" class="mt-20"></div>
+                </div>
+
+                <!-- Project Documents -->
+                <div class="card mb-20">
+                    <h3>Project Documents</h3>
+                    <p style="color: var(--text-secondary); font-size: 0.9rem;">PMBOK-aligned templates for this project type. All team members can edit. Changes save to the database.</p>
+                    <div id="templates-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; margin-top: 15px;"></div>
                 </div>
 
                 <!-- Add Todo Section -->
@@ -145,6 +152,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-functions-compat.js"></script>
     
-    <script type="module" src="dashboard.js?v=6"></script>
+    <script type="module" src="dashboard.js?v=7"></script>
 </body>
 </html>

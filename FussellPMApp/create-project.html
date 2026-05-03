@@ -39,6 +39,12 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Project Type *</label>
+                    <small style="display:block; margin-bottom:10px;">Choose the methodology that best fits this project. The dashboard will provide PMBOK-aligned templates for the selected type.</small>
+                    <div id="project-type-options" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;"></div>
+                </div>
+
+                <div class="form-group">
                     <label for="todo-input">Initial To-Do Items</label>
                     <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                         <input type="text" id="todo-input" placeholder="Enter a task and press Enter or click Add">
@@ -82,6 +88,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
-    <script type="module" src="create-project.js?v=4"></script>
+    <script type="module" src="create-project.js?v=5"></script>
 </body>
 </html>

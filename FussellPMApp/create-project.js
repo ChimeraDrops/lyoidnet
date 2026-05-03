@@ -1,5 +1,6 @@
 // Create Project Page Logic
 import firebaseConfig from './firebase-config.js';
+import { PROJECT_TYPES } from './templates-config.js';
 
 if (firebase.apps.length === 0) {
     firebase.initializeApp(firebaseConfig);
@@ -12,6 +13,7 @@ let currentUser = null;
 let todos = [];
 let createdProjectId = null;
 let createdProjectCode = null;
+let selectedType = 'predictive';
 
 function showAlert(message, type = 'info') {
     const c = document.getElementById('alert-container');
@@ -58,6 +60,7 @@ function addTodo() {
 }
 
 function initEventListeners() {
+    renderProjectTypes();
     document.getElementById('add-todo-btn').addEventListener('click', addTodo);
     document.getElementById('todo-input').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') { e.preventDefault(); addTodo(); }
@@ -68,6 +71,40 @@ function initEventListeners() {
     });
     document.getElementById('create-project-form').addEventListener('submit', handleSubmit);
     renderTodos();
+}
+
+function renderProjectTypes() {
+    const container = document.getElementById('project-type-options');
+    if (!container) return;
+    container.innerHTML = Object.values(PROJECT_TYPES).map(pt => `
+        <label class="type-card" data-type="${pt.id}" style="cursor:pointer; border:2px solid var(--border-color, #e5e7eb); border-radius:10px; padding:14px; display:block; transition: all 0.15s;">
+            <div style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+                <input type="radio" name="project-type" value="${pt.id}" ${pt.id === selectedType ? 'checked' : ''} style="margin:0;">
+                <span style="font-size:1.5rem;">${pt.icon}</span>
+                <strong>${pt.name}</strong>
+            </div>
+            <small style="color:#6b7280; line-height:1.4;">${pt.description}</small>
+        </label>
+    `).join('');
+    updateTypeSelection();
+    container.querySelectorAll('input[name="project-type"]').forEach(radio => {
+        radio.addEventListener('change', () => {
+            selectedType = radio.value;
+            updateTypeSelection();
+        });
+    });
+}
+
+function updateTypeSelection() {
+    document.querySelectorAll('.type-card').forEach(card => {
+        if (card.getAttribute('data-type') === selectedType) {
+            card.style.borderColor = 'var(--primary-color)';
+            card.style.background = '#f0f4ff';
+        } else {
+            card.style.borderColor = 'var(--border-color, #e5e7eb)';
+            card.style.background = '#fff';
+        }
+    });
 }
 
 async function handleSubmit(e) {
@@ -91,6 +128,7 @@ async function handleSubmit(e) {
         const ref = await db.collection('projects').add({
             title,
             description,
+            type: selectedType,
             code,
             creatorId: currentUser.uid,
             creatorEmail: currentUser.email,

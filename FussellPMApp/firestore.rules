@@ -42,6 +42,15 @@ service cloud.firestore {
         allow delete: if request.auth != null &&
           get(/databases/$(database)/documents/projects/$(projectId)).data.creatorId == request.auth.uid;
       }
+
+      // Templates subcollection (PMBOK documents)
+      match /templates/{templateId} {
+        // Project creator or team members can read/write/delete templates
+        allow read, write: if request.auth != null && (
+          get(/databases/$(database)/documents/projects/$(projectId)).data.creatorId == request.auth.uid ||
+          request.auth.token.email in get(/databases/$(database)/documents/projects/$(projectId)).data.teamMembers
+        );
+      }
     }
   }
 }

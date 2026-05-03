@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document - Fussell PM</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .doc-section { background: #fff; border: 1px solid var(--border-color, #e5e7eb); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
+        .doc-section h3 { margin-top: 0; color: var(--primary-color); border-bottom: 1px solid var(--border-color, #e5e7eb); padding-bottom: 10px; }
+        .doc-field { margin-bottom: 16px; }
+        .doc-field label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 0.95rem; }
+        .doc-field .hint { color: #6b7280; font-size: 0.8rem; margin-top: 2px; display: block; }
+        .doc-field input[type="text"], .doc-field textarea, .doc-field select {
+            width: 100%; padding: 10px; border: 1px solid var(--border-color, #d1d5db); border-radius: 6px;
+            font-size: 0.95rem; font-family: inherit;
+        }
+        .doc-field textarea { resize: vertical; min-height: 80px; }
+        .list-items { display: flex; flex-direction: column; gap: 8px; }
+        .list-row { display: flex; gap: 8px; align-items: center; }
+        .list-row input { flex: 1; }
+        .list-row button.remove { padding: 6px 10px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        .add-row-btn { padding: 8px 16px; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 0.85rem; margin-top: 8px; }
+        .add-row-btn:hover { opacity: 0.9; }
+        .doc-table-wrap { overflow-x: auto; margin-top: 8px; }
+        .doc-table { border-collapse: collapse; min-width: 100%; }
+        .doc-table th { background: #f3f4f6; padding: 8px; border: 1px solid var(--border-color, #d1d5db); font-size: 0.85rem; text-align: left; }
+        .doc-table td { border: 1px solid var(--border-color, #e5e7eb); padding: 4px; vertical-align: top; }
+        .doc-table input, .doc-table textarea, .doc-table select { width: 100%; min-width: 120px; padding: 6px; border: none; font-size: 0.85rem; font-family: inherit; background: transparent; }
+        .doc-table input:focus, .doc-table textarea:focus, .doc-table select:focus { background: #f9fafb; outline: 1px solid var(--primary-color); }
+        .doc-table textarea { min-height: 50px; resize: vertical; }
+        .doc-table .row-remove { background: #ef4444; color: white; border: none; border-radius: 4px; padding: 4px 8px; cursor: pointer; font-size: 0.75rem; }
+        .save-bar { position: sticky; top: 0; background: #fff; padding: 15px 0; border-bottom: 1px solid var(--border-color, #e5e7eb); margin-bottom: 20px; z-index: 50; display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .save-status { font-size: 0.85rem; color: #6b7280; }
+        .save-status.saved { color: #10b981; }
+        .save-status.error { color: #ef4444; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px;">
+            <div>
+                <h1 id="doc-title">Document</h1>
+                <p class="tagline" id="doc-description"></p>
+                <p style="font-size: 0.9rem;"><strong id="project-title-display"></strong></p>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-secondary" id="back-btn">← Back to Project</button>
+                <button class="btn btn-secondary" id="logout-btn">Logout</button>
+            </div>
+        </header>
+
+        <main>
+            <div id="alert-container"></div>
+
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Loading document...</p>
+            </div>
+
+            <div id="doc-content" style="display:none;">
+                <div class="save-bar">
+                    <span class="save-status" id="save-status">Loaded</span>
+                    <div>
+                        <button class="btn btn-primary" id="save-btn">Save Document</button>
+                    </div>
+                </div>
+                <div id="sections-container"></div>
+                <div style="text-align: center; margin-top: 30px;">
+                    <button class="btn btn-primary" id="save-btn-bottom" style="min-width: 200px;">Save Document</button>
+                </div>
+            </div>
+        </main>
+
+        <footer>
+            <p>&copy; 2026 Fussell PM. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <script type="module" src="template.js?v=1"></script>
+</body>
+</html>
