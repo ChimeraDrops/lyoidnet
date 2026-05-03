@@ -4,6 +4,7 @@ import firebaseConfig from './firebase-config.js';
 // Initialize Firebase (with error handling for local testing)
 let db, auth, functions;
 let firebaseInitialized = false;
+let currentUser = null;
 
 try {
     if (typeof firebase !== 'undefined' && firebaseConfig.apiKey && firebaseConfig.apiKey !== 'YOUR_API_KEY') {
@@ -19,6 +20,23 @@ try {
 } catch (error) {
     console.error('Firebase initialization failed:', error);
     console.warn('Running in demo mode - UI will work but data will not be saved.');
+}
+
+// Check authentication on page load
+if (firebaseInitialized) {
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            console.log('User authenticated:', user.email);
+            currentUser = user;
+            // Show user info in header
+            document.getElementById('user-email').textContent = user.email;
+            document.getElementById('user-info').classList.remove('hidden');
+        } else {
+            console.log('No user authenticated, redirecting to login');
+            // Redirect to login if not authenticated
+            window.location.href = 'login.html?redirect=create-project.html';
+        }
+    });
 }
 
 // State management
@@ -209,31 +227,38 @@ document.getElementById('create-project-form').addEventListener('submit', async 
         // Generate unique project code
         const projectCode = generateProjectCode();
         
-        // For now, we'll use anonymous auth or a temporary creator ID
-        // In production, you'd want to authenticate the creator first
-        const creatorId = `creator_${Date.now()}`;
+        // Use authenticated user as creator
+        if (!currentUser) {
+            throw new Error('You must be logged in to create a project');
+        }
         
         // Create project document
         const projectRef = await db.collection('projects').add({
             title: title,
             description: description,
             code: projectCode,
-            creatorId: creatorId,
+            creatorId: currentUser.uid,
+            creatorEmail: currentUser.email,
             createdAt: firebase.firestore.FieldValue.serverTimestamp(),
             status: 'setup', // setup, voting, active
             teamMembers: teamEmails,
             todos: todos,
             votingComplete: false,
             launched: false
-        });
-        
-        // Call Cloud Function to send invitation emails
-        const sendInvitations = functions.httpsCallable('sendProjectInvitations');
-        await sendInvitations({
-            projectId: projectRef.id,
-            projectCode: projectCode,
-            projectTitle: title,
-            teamEmails: teamEmails,
+        }); (if deployed)
+        try {
+            const sendInvitations = functions.httpsCallable('sendProjectInvitations');
+            await sendInvitations({
+                projectId: projectRef.id,
+                projectCode: projectCode,
+                projectTitle: title,
+                teamEmails: teamEmails,
+                creatorEmail: currentUser.email
+            });
+        } catch (emailError) {
+            console.warn('Email notifications not sent (Cloud Functions may not be deployed):', emailError);
+            // Continue anyway - emails are optional
+        } teamEmails: teamEmails,
             creatorEmail: 'lyoid@lyoid.net' // You'll want to make this dynamic
         });
         
@@ -278,5 +303,17 @@ renderEmails();
 // Attach event listeners to buttons
 document.getElementById('add-todo-btn').addEventListener('click', addTodo);
 document.getElementById('add-email-btn').addEventListener('click', addEmail);
+
+// Logout handler
+document.getElementById('logout-btn').addEventListener('click', async () => {
+    if (firebaseInitialized && auth) {
+        try {
+            await auth.signOut();
+            window.location.href = 'index.html';
+        } catch (error) {
+            console.error('Logout error:', error);
+        }
+    }
+});
 
 console.log('Initialization complete - event listeners attached');

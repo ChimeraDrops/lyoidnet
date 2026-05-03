@@ -38,12 +38,16 @@ export async function login(username, password) {
         // Sign in with email and password
         const userCredential = await auth.signInWithEmailAndPassword(email, password);
         
-        // Redirect to dashboard
-        window.location.href = 'dashboard.html';
+        // Check for redirect parameter
+        const urlParams = new URLSearchParams(window.location.search);
+        const redirect = urlParams.get('redirect');
+        
+        // Redirect to specified page or dashboard
+        window.location.href = redirect || 'dashboard.html';
         
         return userCredential.user;
     } catch (error) {
-        showAlert(`Login failed: ${error.message}`, 'error');
+        console.error('Login error:', error);
         throw error;
     }
 }

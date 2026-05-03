@@ -8,9 +8,15 @@
 </head>
 <body>
     <div class="container">
-        <header>
+        <header style="position: relative;">
             <h1>Create New Project</h1>
             <p class="tagline">Set up your project and invite your team</p>
+            
+            <!-- User Info -->
+            <div id="user-info" class="hidden" style="position: absolute; top: 10px; right: 10px; text-align: right;">
+                <span id="user-email" style="color: var(--text-secondary); font-size: 0.9rem;"></span>
+                <button id="logout-btn" class="btn btn-secondary" style="margin-left: 10px; padding: 5px 15px; font-size: 0.85rem;">Logout</button>
+            </div>
         </header>
 
         <main>

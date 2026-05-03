@@ -69,6 +69,22 @@
     
     <script type="module" src="auth.js"></script>
     <script>
+        // Show alert function
+        function showAlert(message, type = 'info') {
+            const alertContainer = document.getElementById('alert-container');
+            const alertClass = type === 'error' ? 'alert-error' : type === 'success' ? 'alert-success' : 'alert-info';
+            
+            alertContainer.innerHTML = `
+                <div class="alert ${alertClass}">
+                    ${message}
+                </div>
+            `;
+            
+            setTimeout(() => {
+                alertContainer.innerHTML = '';
+            }, 5000);
+        }
+        
         // Handle login on this page
         import('./auth.js').then(module => {
             document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -85,6 +101,7 @@
                     await module.login(username, password);
                     // Redirect handled in auth.js
                 } catch (error) {
+                    showAlert(`Login failed: ${error.message}`, 'error');
                     document.getElementById('login-form').parentElement.classList.remove('hidden');
                     document.getElementById('loading').classList.add('hidden');
                 }
