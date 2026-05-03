@@ -39,41 +39,72 @@ auth.onAuthStateChanged(async (user) => {
     
     currentUser = user;
     
-    // Get user data
-    const userDoc = await db.collection('users').doc(user.uid).get();
-    const userData = userDoc.data();
-    
-    document.getElementById('username-display').textContent = `Welcome, ${userData.username}!`;
-    
-    // Check URL for projectId
-    const urlParams = new URLSearchParams(window.location.search);
-    const projectId = urlParams.get('projectId');
-    
-    if (projectId) {
-        loadProject(projectId);
-    } else {
-        // Load user's projects
-        loadUserProjects(userData.projects || []);
-    }
-});
-
-// Load user's projects
-async function loadUserProjects(projectIds) {
-    if (projectIds.length === 0) {
-        document.getElementById('projects-list').innerHTML = '<p>You are not part of any projects yet.</p>';
-        return;
-    }
-    
+    try {
+        // Get user data by email (since document ID may not match UID)
+        const userQuery = await db.collection('users')
+            .where('email', '==', user.email)
+            .limit(1)
+            .get();
+        
+        let userData = null;
+        if (!userQuery.empty) {
+            userData = userQuery.docs[0].data();
+            document.getElementById('username-display').textContent = `Welcome, ${userData.username || user.email}!`;
+        } else {
+            document.getElementById('username-display').textContent = `Welcome, ${user.email}!`;
+        }
+        
+        // Check URL for projectId
+        const urlParams = new URLSearchParams(window.location.search);
+        const projectId = urlParams.get('projectId');
+        
+        if (projectId) {) {
     const projectsList = document.getElementById('projects-list');
     projectsList.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
     
     try {
-        const projects = [];
-        for (const projectId of projectIds) {
-            const projectDoc = await db.collection('projects').doc(projectId).get();
-            if (projectDoc.exists) {
-                projects.push({ id: projectDoc.id, ...projectDoc.data() });
+        // Query projects where user is creator or team member
+        const creatorProjects = await db.collection('projects')
+            .where('creatorId', '==', currentUser.uid)
+            .get();
+        
+        const teamProjects = await db.collection('projects')
+            .where('teamMembers', 'array-contains', currentUser.email)
+            .get();
+        
+        // Combine and deduplicate projects
+        const projectsMap = new Map();
+        
+        creatorProjects.forEach(doc => {
+            projectsMap.set(doc.id, { id: doc.id, ...doc.data() });
+        });
+        
+        teamProjects.forEach(doc => {
+            if (!projectsMap.has(doc.id)) {
+                projectsMap.set(doc.id, { id: doc.id, ...doc.data() });
             }
+        });
+        
+        const projects = Array.from(projectsMap.values());
+        
+        if (projects.length === 0) {
+            projectsList.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 20px;">You are not part of any projects yet. Create a new project to get started!</p>';
+            return;
+        }
+        
+        projectsList.innerHTML = projects.map(project => `
+            <div class="card" style="margin-bottom: 10px; cursor: pointer;" onclick="loadProject('${project.id}')">
+                <h3>${project.title}</h3>
+                <p style="color: var(--text-secondary);">${project.description}</p>
+                <p><strong>Status:</strong> ${project.status}</p>
+                <p style="font-size: 0.9rem; color: var(--text-secondary);">Code: ${project.code}</p>
+            </div>
+        `).join('');
+        
+    } catch (error) {
+        console.error('Error loading projects:', error);
+        showAlert('Error loading projects: ' + error.message, 'error');
+        projectsList.innerHTML = '<p style="color: red; text-align: center;">Error loading projects. Check console for details.</p>'
         }
         
         projectsList.innerHTML = projects.map(project => `
