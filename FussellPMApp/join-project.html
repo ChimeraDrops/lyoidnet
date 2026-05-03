@@ -10,32 +10,86 @@
     <div class="container">
         <header>
             <h1>Join Project</h1>
-            <p class="tagline">Enter a project code to join</p>
+            <p class="tagline">Enter a project code to join an existing project</p>
         </header>
 
         <main>
             <div id="alert-container"></div>
 
-            <div class="card" style="max-width: 500px; margin: 0 auto;">
+            <div class="card" style="max-width: 520px; margin: 0 auto;">
                 <div id="auth-loading" class="loading">
                     <div class="spinner"></div>
-                    <p>Checking authentication...</p>
+                    <p>Loading...</p>
                 </div>
 
-                <div id="join-form" style="display:none;">
-                    <p style="color: var(--text-secondary); margin-bottom: 20px;">
+                <!-- Logged-in state: enter code -->
+                <div id="logged-in-section" style="display:none;">
+                    <p style="color: var(--text-secondary); margin-bottom: 16px;">
                         Logged in as <strong id="user-email-display"></strong>
+                        <button id="signout-btn" class="btn btn-secondary" style="margin-left:10px; padding:4px 10px; font-size:0.8rem;">Sign Out</button>
                     </p>
 
+                    <h2>Enter Project Code</h2>
                     <div class="form-group">
-                        <label for="project-code">Project Code</label>
                         <input type="text" id="project-code" placeholder="e.g., ABC123" style="text-transform: uppercase; letter-spacing: 3px; font-size: 1.2rem; text-align: center;">
                     </div>
-
                     <button class="btn btn-primary" id="join-btn" style="width: 100%;">Join Project</button>
 
                     <div class="text-center mt-20">
                         <a href="dashboard.html" style="color: var(--text-secondary);">Back to Dashboard</a>
+                    </div>
+                </div>
+
+                <!-- Logged-out state: tabs for login/signup -->
+                <div id="logged-out-section" style="display:none;">
+                    <div style="display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 1px solid var(--border-color);">
+                        <button class="btn btn-secondary tab-btn" id="tab-login" style="flex:1; border-radius: 6px 6px 0 0;">Login</button>
+                        <button class="btn btn-secondary tab-btn" id="tab-signup" style="flex:1; border-radius: 6px 6px 0 0;">Create Account</button>
+                    </div>
+
+                    <!-- Code field shared (optional) -->
+                    <div class="form-group">
+                        <label for="pending-code">Project Code (optional)</label>
+                        <input type="text" id="pending-code" placeholder="e.g., ABC123 — will auto-join after login" style="text-transform: uppercase; letter-spacing: 2px;">
+                        <small>If you have a code, enter it here. You'll be added to the project after login or signup.</small>
+                    </div>
+
+                    <!-- Login form -->
+                    <form id="login-form">
+                        <div class="form-group">
+                            <label for="login-username">Username</label>
+                            <input type="text" id="login-username" required placeholder="Enter your username">
+                        </div>
+                        <div class="form-group">
+                            <label for="login-password">Password</label>
+                            <input type="password" id="login-password" required placeholder="Enter your password">
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+                    </form>
+
+                    <!-- Signup form -->
+                    <form id="signup-form" style="display:none;">
+                        <div class="form-group">
+                            <label for="signup-username">Username *</label>
+                            <input type="text" id="signup-username" required placeholder="Choose a username">
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-email">Email *</label>
+                            <input type="email" id="signup-email" required placeholder="your@email.com">
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-password">Password *</label>
+                            <input type="password" id="signup-password" required placeholder="Min 6 characters" minlength="6">
+                        </div>
+                        <div class="form-group">
+                            <label for="signup-confirm">Confirm Password *</label>
+                            <input type="password" id="signup-confirm" required placeholder="Re-enter password" minlength="6">
+                        </div>
+                        <button type="submit" class="btn btn-success" style="width: 100%;">Create Account</button>
+                    </form>
+
+                    <div class="text-center mt-20">
+                        <a href="index.html" style="color: var(--text-secondary);">Back to Home</a>
                     </div>
                 </div>
             </div>
@@ -50,6 +104,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
 
-    <script type="module" src="join-project.js?v=1"></script>
+    <script type="module" src="join-project.js?v=2"></script>
 </body>
 </html>
