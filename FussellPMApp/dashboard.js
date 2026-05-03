@@ -353,4 +353,48 @@ window.viewKanban = function() {
     window.location.href = `kanban.html?projectId=${currentProjectId}`;
 };
 
+// Delete project - show confirmation modal
+window.deleteProject = function() {
+    const modal = document.getElementById('delete-modal');
+    document.getElementById('delete-project-name').textContent = currentProject.title;
+    modal.style.display = 'flex';
+};
+
+// Close modal without deleting
+window.closeDeleteModal = function() {
+    document.getElementById('delete-modal').style.display = 'none';
+};
+
+// Close modal if user clicks the backdrop
+document.getElementById('delete-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeDeleteModal();
+});
+
+// Confirmed delete - remove project and all subcollections
+window.confirmDeleteProject = async function() {
+    closeDeleteModal();
+    try {
+        // Delete votes subcollection docs
+        const votesSnapshot = await db.collection('projects').doc(currentProjectId)
+            .collection('votes').get();
+        const deleteVotes = votesSnapshot.docs.map(d => d.ref.delete());
+        await Promise.all(deleteVotes);
+
+        // Delete the project document
+        await db.collection('projects').doc(currentProjectId).delete();
+
+        showAlert('Project deleted.', 'success');
+
+        // Return to project list
+        if (unsubscribeProject) unsubscribeProject();
+        currentProject = null;
+        currentProjectId = null;
+        document.getElementById('project-dashboard').classList.add('hidden');
+        document.getElementById('project-selector').classList.remove('hidden');
+        loadUserProjects();
+    } catch (error) {
+        showAlert('Error deleting project: ' + error.message, 'error');
+    }
+};
+
 console.log('Dashboard.js loaded');
