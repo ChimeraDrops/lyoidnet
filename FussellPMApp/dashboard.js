@@ -353,6 +353,24 @@ window.viewKanban = function() {
     window.location.href = `kanban.html?projectId=${currentProjectId}`;
 };
 
+// Back to all projects list
+window.backToProjects = function() {
+    if (unsubscribeProject) unsubscribeProject();
+    currentProject = null;
+    currentProjectId = null;
+    userVotes = {};
+    pointsRemaining = 20;
+
+    // Clear projectId from URL without reloading
+    const url = new URL(window.location.href);
+    url.searchParams.delete('projectId');
+    window.history.replaceState({}, '', url);
+
+    document.getElementById('project-dashboard').classList.add('hidden');
+    document.getElementById('project-selector').classList.remove('hidden');
+    loadUserProjects();
+};
+
 // Delete project - show confirmation modal
 window.deleteProject = function() {
     const modal = document.getElementById('delete-modal');
