@@ -2,12 +2,12 @@
 // Replace these values with your Firebase project credentials
 
 const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-    projectId: "YOUR_PROJECT_ID",
-    storageBucket: "YOUR_PROJECT_ID.appspot.com",
-    messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-    appId: "YOUR_APP_ID"
+  apiKey: "AIzaSyDePPJCjomZgvc2i62iXVvv3EMS35zs3gU",
+  authDomain: "fussellpmapp.firebaseapp.com",
+  projectId: "fussellpmapp",
+  storageBucket: "fussellpmapp.firebasestorage.app",
+  messagingSenderId: "634913098537",
+  appId: "1:634913098537:web:2647f5e88d974029ef4538"
 };
 
 // Initialize Firebase

@@ -27,7 +27,7 @@ This guide will walk you through setting up Firebase and deploying to GitHub Pag
 
 ### Step 1: Create Firestore Database
 
-1. In the left sidebar, click **"Build"** → **"Firestore Database"**
+1. In the left sidebar, expand **"Databases & Storage"** (or look for **"Build"** in older UI) → Click **"Firestore Database"**
 2. Click **"Create database"**
 3. **Secure rules for Cloud Firestore**:
    - Select **"Start in production mode"** (we'll fix rules next)
@@ -72,7 +72,7 @@ service cloud.firestore {
 
 ### Step 1: Turn On Email/Password Auth
 
-1. In the left sidebar, click **"Build"** → **"Authentication"**
+1. In the left sidebar, expand **"Security"** (or look for **"Build"** in older UI) → Click **"Authentication"**
 2. Click **"Get started"**
 3. Click the **"Sign-in method"** tab at the top
 4. Find **"Email/Password"** in the list and click on it
