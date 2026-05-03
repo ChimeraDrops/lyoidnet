@@ -19,7 +19,7 @@
                     <div class="card-icon">🚀</div>
                     <h2>Start New Project</h2>
                     <p>Create a new project, invite team members, and start collaborating</p>
-                    <button class="btn btn-primary" onclick="window.location.href='create-project.html'">
+                    <button class="btn btn-primary" id="create-project-btn">
                         Create Project
                     </button>
                 </div>
@@ -28,7 +28,7 @@
                     <div class="card-icon">📋</div>
                     <h2>Explore Existing Projects</h2>
                     <p>View and manage your ongoing projects</p>
-                    <button class="btn btn-secondary" onclick="window.location.href='login.html'">
+                    <button class="btn btn-secondary" id="login-btn">
                         Login to Dashboard
                     </button>
                 </div>
@@ -50,6 +50,16 @@
         </footer>
     </div>
 
-    <script type="module" src="firebase-config.js"></script>
+    <script>
+        // Set up button handlers
+        document.getElementById('create-project-btn').addEventListener('click', () => {
+            // Always go to login first - it will redirect to create-project if already logged in
+            window.location.href = 'login.html?redirect=create-project.html';
+        });
+        
+        document.getElementById('login-btn').addEventListener('click', () => {
+            window.location.href = 'login.html';
+        });
+    </script>
 </body>
 </html>

@@ -68,7 +68,22 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
     
     <script type="module" src="auth.js"></script>
-    <script>
+    <script type="module">
+        // Check if already logged in (after auth.js initializes Firebase)
+        setTimeout(() => {
+            if (typeof firebase !== 'undefined' && firebase.apps.length > 0) {
+                const auth = firebase.auth();
+                auth.onAuthStateChanged(user => {
+                    if (user) {
+                        // Already logged in, redirect
+                        const urlParams = new URLSearchParams(window.location.search);
+                        const redirect = urlParams.get('redirect');
+                        window.location.href = redirect || 'dashboard.html';
+                    }
+                });
+            }
+        }, 100);
+        
         // Show alert function
         function showAlert(message, type = 'info') {
             const alertContainer = document.getElementById('alert-container');
